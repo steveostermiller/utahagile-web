@@ -1,0 +1,146 @@
+/* Utah Agile — base styles
+   Clean, fast, accessible replacement for the Wix site.
+   Colors are placeholders until we match the exact brand palette. */
+
+:root {
+  --brand:       #1e2d3d;   /* Utah Agile slate navy (from logo) */
+  --brand-dark:  #16212d;
+  --accent:      #f26b21;   /* warm CTA orange   */
+  --accent-dark: #d1550f;
+  --ink:         #1a1f26;
+  --muted:       #5b6570;
+  --line:        #e3e7ec;
+  --bg:          #ffffff;
+  --bg-alt:      #f6f8fa;
+  --radius:      10px;
+  --maxw:        1080px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--brand); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+img { max-width: 100%; height: auto; display: block; }
+
+.container { max-width: var(--maxw); margin: 0 auto; padding: 0 1.25rem; }
+
+.section { padding: 3.5rem 0; }
+.section--alt { background: var(--bg-alt); }
+
+h1, h2, h3 { line-height: 1.2; color: var(--ink); }
+h1 { font-size: clamp(2rem, 5vw, 3rem); }
+h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); margin-top: 0; }
+.lead { font-size: 1.15rem; color: var(--muted); }
+
+/* ---------- Buttons ---------- */
+.btn {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius);
+  font-weight: 600;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: background .15s ease, color .15s ease;
+}
+.btn:hover { text-decoration: none; }
+.btn--primary { background: var(--accent); color: #fff; }
+.btn--primary:hover { background: var(--accent-dark); }
+.btn--ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.7); }
+.btn--ghost:hover { background: rgba(255,255,255,.12); }
+
+/* ---------- Header / nav ---------- */
+.site-header {
+  position: sticky; top: 0; z-index: 50;
+  background: var(--bg);
+  border-bottom: 1px solid var(--line);
+}
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.85rem 0;
+}
+.nav__brand { font-weight: 800; font-size: 1.25rem; color: var(--brand); display: inline-flex; align-items: center; }
+.nav__brand:hover { text-decoration: none; }
+.nav__brand img { height: 38px; width: auto; }
+.nav__links { display: flex; gap: 1.4rem; align-items: center; flex-wrap: wrap; }
+.nav__links a { color: var(--ink); font-weight: 500; }
+.nav__links a:hover { color: var(--brand); text-decoration: none; }
+.nav__toggle { display: none; background: none; border: 0; font-size: 1.5rem; cursor: pointer; }
+
+/* ---------- Hero ---------- */
+.hero {
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  color: #fff; padding: 4.5rem 0;
+}
+.hero h1 { color: #fff; }
+.hero .lead { color: rgba(255,255,255,.85); max-width: 640px; }
+.hero__cta { margin-top: 1.75rem; display: flex; gap: 1rem; flex-wrap: wrap; }
+
+/* ---------- Cards / grid ---------- */
+.grid { display: grid; gap: 1.25rem; }
+.grid--3 { grid-template-columns: repeat(3, 1fr); }
+.grid--2 { grid-template-columns: repeat(2, 1fr); }
+.card {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.4rem; background: var(--bg);
+  transition: box-shadow .15s ease, transform .15s ease;
+}
+.card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.07); transform: translateY(-2px); }
+.card h3 { margin: 0 0 .4rem; }
+.card p { margin: 0; color: var(--muted); }
+
+/* ---------- Events ---------- */
+.event {
+  display: flex; gap: 1.25rem; align-items: flex-start;
+  border: 1px solid var(--line); border-radius: var(--radius);
+  padding: 1.25rem; margin-bottom: 1rem; background: var(--bg);
+}
+.event__date {
+  flex: 0 0 84px; text-align: center; background: var(--brand); color: #fff;
+  border-radius: var(--radius); padding: .6rem .2rem;
+}
+.event__date .m { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; }
+.event__date .d { font-size: 1.7rem; font-weight: 800; line-height: 1; }
+.event__body h3 { margin: 0 0 .3rem; }
+.event__meta { color: var(--muted); font-size: .95rem; margin: 0 0 .5rem; }
+.events-empty { color: var(--muted); font-style: italic; }
+
+/* ---------- Newsletter ---------- */
+.newsletter { background: var(--brand-dark); color: #fff; }
+.newsletter h2 { color: #fff; }
+.newsletter .lead { color: rgba(255,255,255,.8); }
+
+/* ---------- Sponsors ---------- */
+.logos { display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; justify-content: center; }
+.logos img { max-height: 48px; filter: grayscale(1); opacity: .8; }
+
+/* ---------- Footer ---------- */
+.site-footer { background: var(--ink); color: #c7cdd4; padding: 2.5rem 0; font-size: .95rem; }
+.site-footer a { color: #fff; }
+.site-footer__grid { display: flex; justify-content: space-between; gap: 2rem; flex-wrap: wrap; }
+.social { display: flex; gap: 1rem; margin-top: .5rem; }
+.social a { color: #c7cdd4; }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 800px) {
+  .grid--3, .grid--2 { grid-template-columns: 1fr; }
+  .nav__links {
+    display: none; position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; background: var(--bg); border-bottom: 1px solid var(--line);
+    padding: 1rem 1.25rem; gap: 1rem;
+  }
+  .nav__links.open { display: flex; }
+  .nav__toggle { display: block; }
+}
