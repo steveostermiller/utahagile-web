@@ -3,12 +3,12 @@
    handles the mobile menu, and renders events from data/events.json. */
 
 const NAV = [
-  { label: "Events",       href: "/events.html" },
-  { label: "About",        href: "/about.html" },
-  { label: "Speakers",     href: "/speakers.html" },
-  { label: "Sponsorship",  href: "/sponsorship.html" },
-  { label: "Jobs",         href: "/jobs.html" },
-  { label: "Volunteer",    href: "/volunteer.html" },
+  { label: "Events",       href: "events.html" },
+  { label: "About",        href: "about.html" },
+  { label: "Speakers",     href: "speakers.html" },
+  { label: "Sponsorship",  href: "sponsorship.html" },
+  { label: "Jobs",         href: "jobs.html" },
+  { label: "Volunteer",    href: "volunteer.html" },
 ];
 
 const SOCIAL = {
@@ -25,14 +25,14 @@ function renderHeader() {
   if (!el) return;
   el.innerHTML = `
     <div class="container nav">
-      <a class="nav__brand" href="/" aria-label="Utah Agile home">
-        <img src="/assets/img/logo.png" alt="Utah Agile"
+      <a class="nav__brand" href="index.html" aria-label="Utah Agile home">
+        <img src="assets/img/logo.png" alt="Utah Agile"
              onerror="this.replaceWith(document.createTextNode('Utah Agile'))">
       </a>
       <button class="nav__toggle" aria-label="Menu" aria-expanded="false">&#9776;</button>
       <nav class="nav__links">
         ${NAV.map(n => `<a href="${n.href}">${n.label}</a>`).join("")}
-        <a class="btn btn--primary" href="/#subscribe">Subscribe</a>
+        <a class="btn btn--primary" href="index.html#subscribe">Subscribe</a>
       </nav>
     </div>`;
   const toggle = el.querySelector(".nav__toggle");
@@ -63,7 +63,7 @@ function renderFooter() {
       </div>
       <div>
         &copy; ${year} Utah Agile<br>
-        <a href="/privacy.html">Privacy &amp; GDPR</a>
+        <a href="privacy.html">Privacy &amp; GDPR</a>
       </div>
     </div>`;
 }
@@ -97,7 +97,7 @@ async function renderEvents() {
   if (!containers.length) return;
   let events = [];
   try {
-    const res = await fetch("/data/events.json", { cache: "no-store" });
+    const res = await fetch("data/events.json", { cache: "no-store" });
     events = await res.json();
   } catch (e) {
     console.error("Could not load events.json", e);

@@ -52,10 +52,15 @@ python3 scripts/build_events.py
 
 ## Deploy (free hosting)
 
-**Option A — Cloudflare Pages (recommended):** connect the GitHub repo, framework
-preset "None", build command empty, output directory `/`. Auto-deploys on push.
+**GitHub Pages (recommended — everything stays in one place):**
+Repo → **Settings → Pages → Build and deployment → Source: "Deploy from a branch"**
+→ Branch **`main`**, folder **`/ (root)`** → **Save**. Publishes at
+`https://steveostermiller.github.io/utahagile-web/` in ~1 minute, and auto-redeploys
+on every push (including the hourly events commit). Paths are relative, so it works at
+this subpath and at the root custom domain later. A `.nojekyll` file disables Jekyll.
 
-**Option B — GitHub Pages:** repo Settings → Pages → deploy from `main` / root.
+**Alternative — Cloudflare Pages:** Workers & Pages → Create → **Pages → Connect to Git**
+(not "Worker"), framework preset "None", build command empty, output directory `/`.
 
 ### Point the domain (Squarespace registrar)
 
