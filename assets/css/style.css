@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;1,400&family=Noto+Serif:wght@600;700&display=swap');
+
 /* Utah Agile — base styles
    Clean, fast, accessible replacement for the Wix site.
-   Colors are placeholders until we match the exact brand palette. */
+   Fonts matched to the original: Lato for text/headings, Noto Serif for bio names. */
 
 :root {
   --brand:       #1e2d3d;   /* Utah Agile slate navy (from logo) */
@@ -14,7 +16,8 @@
   --bg-alt:      #f6f8fa;
   --radius:      10px;
   --maxw:        1080px;
-  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font: 'Lato', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: 'Noto Serif', Georgia, 'Times New Roman', serif;
 }
 
 * { box-sizing: border-box; }
@@ -143,6 +146,20 @@ h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); margin-top: 0; }
 .logo-grid a { transition: box-shadow .15s ease, transform .15s ease; }
 .logo-grid a:hover { box-shadow: 0 6px 18px rgba(0,0,0,.08); transform: translateY(-2px); }
 
+/* ---------- Rotating logo banner (marquee) ---------- */
+.logo-marquee { overflow: hidden; margin-top: 1.5rem; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.logo-track { display: flex; width: max-content; gap: 1rem; animation: logo-scroll 40s linear infinite; }
+.logo-marquee:hover .logo-track { animation-play-state: paused; }
+.logo-track .logo-cell, .logo-track a {
+  flex: 0 0 auto; width: 180px; height: 110px;
+  display: flex; align-items: center; justify-content: center;
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1rem;
+}
+.logo-track img { max-height: 72px; max-width: 100%; object-fit: contain; filter: grayscale(1); opacity: .75; transition: filter .2s, opacity .2s; }
+.logo-track a:hover img, .logo-track .logo-cell:hover img { filter: none; opacity: 1; }
+@keyframes logo-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .logo-track { animation: none; flex-wrap: wrap; width: auto; justify-content: center; } }
+
 /* ---------- Video embeds (Vimeo) ---------- */
 .video-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem; }
 .video-embed { position: relative; padding-top: 56.25%; border-radius: var(--radius); overflow: hidden; background: #000; }
@@ -151,8 +168,8 @@ h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); margin-top: 0; }
 /* ---------- Team / bios ---------- */
 .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.75rem; margin-top: 1.5rem; }
 .member { text-align: center; }
-.member img { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; margin: 0 auto .8rem; border: 3px solid var(--line); }
-.member h3 { margin: 0; font-size: 1.1rem; }
+.member img { width: 160px; height: 160px; border-radius: 50%; object-fit: cover; margin: 0 auto .8rem; border: 3px solid var(--line); }
+.member h3 { margin: 0; font-size: 1.25rem; font-family: var(--font-serif); font-weight: 700; }
 .member .role { color: var(--brand); font-weight: 600; font-size: .9rem; margin: .1rem 0 .4rem; }
 .member .tagline { color: var(--muted); font-size: .9rem; margin: 0 0 .5rem; }
 .member a.li { font-size: .85rem; }
