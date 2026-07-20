@@ -79,8 +79,11 @@ h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); margin-top: 0; }
 .nav__brand img { height: 56px; width: auto; }
 @media (max-width: 640px) { .nav__brand img { height: 44px; } }
 
-/* Anchor targets clear the sticky header on the one-page layout */
-section[id] { scroll-margin-top: 90px; }
+/* Anchor targets clear the sticky header on the one-page layout.
+   Applies to every element with an id, not just <section> — nav
+   sub-links (e.g. the "Get Involved" dropdown) point at headings
+   nested inside a section, not the section itself. */
+[id] { scroll-margin-top: 90px; }
 
 /* Social icons (image links, like the original site) */
 .social-icons { display: flex; gap: .65rem; align-items: center; flex-wrap: wrap; margin-top: .6rem; }
