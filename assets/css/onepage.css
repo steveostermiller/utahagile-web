@@ -27,6 +27,16 @@
 /* Section divider inside the long "get involved" block */
 .rule { border: 0; border-top: 1px solid var(--line); margin: 2.75rem 0; }
 
+/* About section: text alongside a stacked photo column, like the original site */
+.about-grid { display: grid; grid-template-columns: 1fr 280px; gap: 2.5rem; align-items: start; margin-top: 1.5rem; }
+.about-photos { display: flex; flex-direction: column; gap: 1rem; }
+.about-photos img { width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius); display: block; }
+@media (max-width: 900px) {
+  .about-grid { grid-template-columns: 1fr; }
+  .about-photos { flex-direction: row; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .about-photos img { flex: 0 0 70%; height: 220px; }
+}
+
 /* The brand logo is dark navy; invert it to solid white for the dark footer.
    (brightness(0) flattens it to black, invert(1) flips that to white —
    works because logo.png has a transparent background.) */
