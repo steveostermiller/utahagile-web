@@ -1,5 +1,26 @@
 /* Extra styles used only by the one-page layout (onepage.html). */
 
+/* Body-copy hyperlinks are orange (matching the original site's inline
+   links, e.g. the "resource page" link on the SEUs page). This overrides
+   style.css's base `a` rule by cascade order (onepage.css loads after
+   style.css, equal specificity) -- but only on pages that load this file,
+   so the untouched multi-page site keeps its navy links. Nav links, buttons,
+   and cards all set their own color explicitly (higher specificity) and are
+   unaffected. */
+a { color: var(--accent); }
+
+/* Footer links stay white, but permanently underlined rather than only on
+   hover -- same cascade-order scoping as above. */
+.site-footer a { text-decoration: underline; }
+
+/* Small icon shown beside a "Get Involved" section heading (Network's
+   Slack icon, Sponsorship's handshake badge) -- both pulled from the
+   original site, which had no other section-level images (SEUs, Speakers,
+   Volunteer never had a dedicated image beyond the shared site logo). */
+.section-icon-heading { display: flex; align-items: center; justify-content: space-between; gap: 1.25rem; flex-wrap: wrap; }
+.section-icon-heading h2 { margin: 0; }
+.section-icon { width: 64px; height: 64px; flex-shrink: 0; }
+
 /* 9 "Explore" quick links, like the original site's grid */
 .explore-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;
