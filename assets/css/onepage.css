@@ -31,3 +31,28 @@
    (brightness(0) flattens it to black, invert(1) flips that to white —
    works because logo.png has a transparent background.) */
 .footer-logo { height: 46px; width: auto; filter: brightness(0) invert(1); }
+
+/* ---------- "Get Involved" nav dropdown ---------- */
+.nav__dropdown { position: relative; }
+.nav__dropdown-toggle { display: inline-flex; align-items: center; gap: .25rem; cursor: pointer; }
+.nav__dropdown-menu {
+  display: none; position: absolute; top: 100%; left: 0; margin-top: .6rem;
+  background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0,0,0,.1); padding: .5rem; min-width: 200px; z-index: 60;
+}
+.nav__dropdown-menu a {
+  display: block; padding: .55rem .75rem; border-radius: 6px; font-weight: 500; white-space: nowrap;
+}
+.nav__dropdown-menu a:hover { background: var(--bg-alt); text-decoration: none; }
+.nav__dropdown:hover .nav__dropdown-menu,
+.nav__dropdown:focus-within .nav__dropdown-menu,
+.nav__dropdown.open .nav__dropdown-menu { display: block; }
+
+@media (max-width: 800px) {
+  .nav__dropdown-menu {
+    display: none; position: static; box-shadow: none; border: 0; margin-top: .25rem;
+    padding-left: .75rem; min-width: 0;
+  }
+  .nav__dropdown:hover .nav__dropdown-menu { display: none; } /* hover doesn't apply on touch */
+  .nav__dropdown.open .nav__dropdown-menu { display: block; }
+}

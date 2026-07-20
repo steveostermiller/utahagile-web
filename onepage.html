@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Utah's Premier Agile Professional Association | Utah Agile</title>
   <meta name="description" content="Utah Agile convenes Utah's agile professionals — networking, collaboration, and mentoring. Membership is free.">
-  <link rel="icon" href="assets/img/icon-a.png">
+  <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="alternate icon" href="assets/img/favicon.png">
   <link rel="stylesheet" href="assets/css/style.css">
   <link rel="stylesheet" href="assets/css/onepage.css">
 </head>
@@ -22,8 +23,18 @@
       <a href="#events">Events</a>
       <a href="#about">About</a>
       <a href="#team">Team</a>
-      <a href="#get-involved">Get Involved</a>
-      <a href="#sponsors">Sponsors</a>
+      <div class="nav__dropdown">
+        <a href="#get-involved" class="nav__dropdown-toggle">Get Involved &#9662;</a>
+        <div class="nav__dropdown-menu">
+          <a href="#seus">Earn SEUs</a>
+          <a href="#network">Network</a>
+          <a href="#speakers">Become a Speaker</a>
+          <a href="#jobs">Jobs</a>
+          <a href="#volunteer">Volunteer</a>
+          <a href="#certification">Certification</a>
+        </div>
+      </div>
+      <a href="#sponsorship">Sponsorship</a>
       <a class="btn btn--primary" href="#subscribe">Subscribe</a>
     </nav>
   </div>
@@ -418,8 +429,21 @@
     var open = links.classList.toggle('open');
     this.setAttribute('aria-expanded', String(open));
   });
-  document.querySelectorAll('.nav__links a').forEach(function (a) {
-    a.addEventListener('click', function () { document.querySelector('.nav__links').classList.remove('open'); });
+  // On mobile, the first tap on "Get Involved" opens its submenu instead of
+  // jumping straight to the anchor; a second tap (or any submenu link) navigates.
+  document.querySelector('.nav__dropdown-toggle').addEventListener('click', function (e) {
+    var dd = this.closest('.nav__dropdown');
+    var isMobileNav = window.matchMedia('(max-width: 800px)').matches;
+    if (isMobileNav && !dd.classList.contains('open')) {
+      e.preventDefault();
+      dd.classList.add('open');
+    }
+  });
+  document.querySelectorAll('.nav__links a:not(.nav__dropdown-toggle)').forEach(function (a) {
+    a.addEventListener('click', function () {
+      document.querySelector('.nav__links').classList.remove('open');
+      document.querySelector('.nav__dropdown').classList.remove('open');
+    });
   });
   document.getElementById('footer-year').textContent = '© ' + new Date().getFullYear() + ' Utah Agile';
 </script>
