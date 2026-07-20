@@ -37,6 +37,23 @@
   .about-photos img { flex: 0 0 70%; height: 220px; }
 }
 
+/* Bio grids: fixed items-per-row (not fluid auto-fill), centered, so the
+   last row is never a single lonely photo off to one side. Team has 5
+   members -> 3 per row (3+2). Advisers has 7 -> 4 per row (4+3). Both
+   splits differ by only 1, which is as balanced as those counts allow
+   without a full single row. Overrides style.css's base .team-grid
+   (auto-fill) only when a --N modifier is present, so the untouched
+   multi-page about.html keeps its original grid behavior. */
+.team-grid--3, .team-grid--4 {
+  display: flex; flex-wrap: wrap; justify-content: center;
+}
+.team-grid--3 .member { flex: 0 0 auto; width: calc((100% - 2 * 1.75rem) / 3); }
+.team-grid--4 .member { flex: 0 0 auto; width: calc((100% - 3 * 1.75rem) / 4); }
+
+@media (max-width: 800px) {
+  .team-grid--3 .member, .team-grid--4 .member { width: 100%; max-width: 320px; }
+}
+
 /* The brand logo is dark navy; invert it to solid white for the dark footer.
    (brightness(0) flattens it to black, invert(1) flips that to white —
    works because logo.png has a transparent background.) */
