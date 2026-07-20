@@ -35,10 +35,20 @@
 /* ---------- "Get Involved" nav dropdown ---------- */
 .nav__dropdown { position: relative; }
 .nav__dropdown-toggle { display: inline-flex; align-items: center; gap: .25rem; cursor: pointer; }
+
+/* .nav__dropdown-menu is the HOVERABLE hit area: it sits flush against the
+   toggle (no margin) and uses padding-top for the visual gap instead, so the
+   gap is still part of the box the mouse is "over" while crossing it. A
+   margin-top gap here would create dead space that isn't part of any
+   element's box, dropping :hover the instant the mouse crosses it — which
+   is exactly the bug this replaced (menu closed before you could reach a link). */
 .nav__dropdown-menu {
-  display: none; position: absolute; top: 100%; left: 0; margin-top: .6rem;
+  display: none; position: absolute; top: 100%; left: 0; padding-top: .6rem;
+  min-width: 200px; z-index: 60;
+}
+.nav__dropdown-menu-card {
   background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
-  box-shadow: 0 10px 30px rgba(0,0,0,.1); padding: .5rem; min-width: 200px; z-index: 60;
+  box-shadow: 0 10px 30px rgba(0,0,0,.1); padding: .5rem;
 }
 .nav__dropdown-menu a {
   display: block; padding: .55rem .75rem; border-radius: 6px; font-weight: 500; white-space: nowrap;
@@ -49,10 +59,8 @@
 .nav__dropdown.open .nav__dropdown-menu { display: block; }
 
 @media (max-width: 800px) {
-  .nav__dropdown-menu {
-    display: none; position: static; box-shadow: none; border: 0; margin-top: .25rem;
-    padding-left: .75rem; min-width: 0;
-  }
+  .nav__dropdown-menu { display: none; position: static; padding-top: 0; min-width: 0; }
+  .nav__dropdown-menu-card { background: transparent; border: 0; box-shadow: none; padding: 0 0 0 .75rem; }
   .nav__dropdown:hover .nav__dropdown-menu { display: none; } /* hover doesn't apply on touch */
   .nav__dropdown.open .nav__dropdown-menu { display: block; }
 }
