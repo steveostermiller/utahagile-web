@@ -1,5 +1,101 @@
 /* Extra styles used only by the one-page layout (onepage.html). */
 
+/* Typography matched to measurements taken directly from the live Wix site:
+   body copy is 21px/1.5 Lato regular, section headings are 36px Lato bold,
+   subheadings are 21px Lato bold (same size as body, just bold). Our
+   defaults (browser 16px body, clamped ~27-34px h2, unstyled h3) read
+   noticeably smaller/different by comparison. */
+p { font-size: 1.3125rem; line-height: 1.5; }
+.lead { font-size: 1.3125rem; line-height: 1.5; }
+h2 { font-size: 2.25rem; }
+h3 { font-size: 1.3125rem; }
+.member .tagline { font-size: .95rem; } /* bio taglines stay compact, not body-size */
+.video-item figcaption p { font-size: .95rem; line-height: 1.5; }
+.channels li { font-size: .9rem; }
+
+/* Nav logo, bumped up again per request (was 56px). */
+.nav__brand img { height: 72px; }
+@media (max-width: 640px) { .nav__brand img { height: 56px; } }
+
+/* Footer: lighter blue matching the Get Involved section icons (#2494DC),
+   not the dark navy from the logo. */
+.site-footer { background: #2494DC; }
+
+/* Bio LinkedIn links are the gray "in" icon, not text -- overrides the more
+   general .member img (160px circular photo) rule via higher specificity. */
+.member a.li { display: inline-block; }
+.member a.li img {
+  width: 26px; height: 26px; border-radius: 0; border: 0; margin: 0 auto; display: block;
+  opacity: .75; transition: opacity .15s ease;
+}
+.member a.li:hover img { opacity: 1; }
+
+/* Video thumbnails (small, click-to-play) replacing always-on embeds.
+   Reuses .video-grid's 2-col layout from style.css; --thumbs just needs
+   its own button/image/play-badge styling. */
+.video-grid--thumbs { align-items: start; }
+.video-thumb {
+  display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer;
+  text-align: left; font-family: inherit; color: inherit;
+}
+.video-thumb__img {
+  position: relative; display: block; padding-top: 56.25%; border-radius: var(--radius);
+  overflow: hidden; background: #000;
+}
+.video-thumb__img img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+  transition: transform .2s ease;
+}
+.video-thumb:hover .video-thumb__img img { transform: scale(1.03); }
+.video-thumb__play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 56px; height: 56px; border-radius: 50%; background: rgba(0,0,0,.55);
+  color: #fff; font-size: 1.1rem; display: flex; align-items: center; justify-content: center;
+  padding-left: 4px; /* optically center the triangle */
+}
+.video-thumb__title {
+  display: block; margin-top: .6rem; font-weight: 700; font-size: 1rem; color: var(--ink);
+}
+
+/* Lightbox modal: a larger player opens on top of the page. */
+.video-lightbox { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; }
+.video-lightbox[hidden] { display: none; }
+.video-lightbox__backdrop { position: absolute; inset: 0; background: rgba(10,14,18,.85); }
+.video-lightbox__box {
+  position: relative; width: min(900px, 92vw); z-index: 1;
+}
+.video-lightbox__frame {
+  position: relative; padding-top: 56.25%; background: #000; border-radius: var(--radius); overflow: hidden;
+}
+.video-lightbox__frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.video-lightbox__close {
+  position: absolute; top: -2.75rem; right: 0; width: 40px; height: 40px; border-radius: 50%;
+  border: 0; background: rgba(255,255,255,.15); color: #fff; font-size: 1.5rem; line-height: 1;
+  cursor: pointer;
+}
+.video-lightbox__close:hover { background: rgba(255,255,255,.3); }
+
+/* "Get Involved" as a page-within-a-page: one H2 header, then each topic
+   (SEUs, Network, Speakers, Volunteer, Sponsorship) is its own bordered
+   "microsection" card with an icon, rather than a flat list of H2s
+   separated by <hr>. */
+.microsections { display: flex; flex-direction: column; gap: 1.75rem; margin-top: 2rem; }
+.microsection {
+  background: var(--bg); border: 1px solid var(--line); border-radius: calc(var(--radius) * 1.5);
+  padding: 2rem;
+}
+.microsection .section-icon-heading { margin-bottom: 1rem; }
+.microsection h3 { font-size: 1.5rem; margin: 0; }
+
+/* Sponsorship benefits: standout bullet points, not hoverable/clickable-
+   looking cards (they don't go anywhere, so they shouldn't look like buttons). */
+.benefits-grid { list-style: none; padding: 0; margin: 1.5rem 0 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.benefits-grid li { position: relative; padding-left: 1.85rem; font-weight: 700; color: var(--ink); }
+.benefits-grid li::before {
+  content: '\2713'; position: absolute; left: 0; top: 0; color: var(--accent); font-weight: 700;
+}
+@media (max-width: 700px) { .benefits-grid { grid-template-columns: 1fr; } }
+
 /* Body-copy hyperlinks are orange (matching the original site's inline
    links, e.g. the "resource page" link on the SEUs page). This overrides
    style.css's base `a` rule by cascade order (onepage.css loads after
