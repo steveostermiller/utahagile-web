@@ -27,4 +27,7 @@
 /* Section divider inside the long "get involved" block */
 .rule { border: 0; border-top: 1px solid var(--line); margin: 2.75rem 0; }
 
-.footer-logo { height: 46px; width: auto; }
+/* The brand logo is dark navy; invert it to solid white for the dark footer.
+   (brightness(0) flattens it to black, invert(1) flips that to white —
+   works because logo.png has a transparent background.) */
+.footer-logo { height: 46px; width: auto; filter: brightness(0) invert(1); }
