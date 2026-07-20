@@ -76,7 +76,17 @@ h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); margin-top: 0; }
 }
 .nav__brand { font-weight: 800; font-size: 1.25rem; color: var(--brand); display: inline-flex; align-items: center; }
 .nav__brand:hover { text-decoration: none; }
-.nav__brand img { height: 38px; width: auto; }
+.nav__brand img { height: 56px; width: auto; }
+@media (max-width: 640px) { .nav__brand img { height: 44px; } }
+
+/* Anchor targets clear the sticky header on the one-page layout */
+section[id] { scroll-margin-top: 90px; }
+
+/* Social icons (image links, like the original site) */
+.social-icons { display: flex; gap: .65rem; align-items: center; flex-wrap: wrap; margin-top: .6rem; }
+.social-icons a { display: inline-flex; }
+.social-icons img { width: 34px; height: 34px; display: block; transition: transform .15s ease, opacity .15s ease; opacity: .9; }
+.social-icons a:hover img { transform: translateY(-2px); opacity: 1; }
 .nav__links { display: flex; gap: 1.4rem; align-items: center; flex-wrap: wrap; }
 .nav__links a { color: var(--ink); font-weight: 500; }
 .nav__links a:hover { color: var(--brand); text-decoration: none; }

@@ -11,14 +11,30 @@ const NAV = [
   { label: "Volunteer",    href: "volunteer.html" },
 ];
 
+// Exact links + icons taken from the original site's footer.
 const SOCIAL = {
-  meetup:   "https://www.meetup.com/utahagile",
-  linkedin: "https://www.linkedin.com/company/utah-agile",
   youtube:  "https://www.youtube.com/@utahagile",
-  twitter:  "https://twitter.com/utahagile",
+  linkedin: "https://www.linkedin.com/groups/8360116/",
+  twitter:  "https://twitter.com/utahagile/",
+  meetup:   "https://www.meetup.com/utahagile/",
+  slack:    "https://utahagilists.slack.com/",
   facebook: "https://www.facebook.com/utahagile",
-  slack:    "#", // TODO: Slack invite link
 };
+
+const SOCIAL_ORDER = [
+  ["youtube",  "YouTube"],
+  ["linkedin", "LinkedIn"],
+  ["twitter",  "Twitter"],
+  ["meetup",   "Meetup"],
+  ["slack",    "Slack"],
+  ["facebook", "Facebook"],
+];
+
+function socialIconsHTML() {
+  return `<div class="social-icons">` + SOCIAL_ORDER.map(([k, label]) =>
+    `<a href="${SOCIAL[k]}" title="${label}" aria-label="${label}">
+       <img src="assets/img/social/${k}.png" alt="${label}"></a>`).join("") + `</div>`;
+}
 
 function renderHeader() {
   const el = document.getElementById("site-header");
@@ -52,18 +68,12 @@ function renderFooter() {
       <div>
         <strong>Utah Agile</strong><br>
         A 501(c)6 nonprofit uniting Utah's agile community.<br>
-        <a href="mailto:info@agileutah.org">info@agileutah.org</a>
-        <div class="social">
-          <a href="${SOCIAL.meetup}">Meetup</a>
-          <a href="${SOCIAL.linkedin}">LinkedIn</a>
-          <a href="${SOCIAL.youtube}">YouTube</a>
-          <a href="${SOCIAL.twitter}">Twitter</a>
-          <a href="${SOCIAL.facebook}">Facebook</a>
-        </div>
+        <a href="mailto:info@utahagile.org">info@utahagile.org</a>
+        ${socialIconsHTML()}
       </div>
       <div>
         &copy; ${year} Utah Agile<br>
-        <a href="privacy.html">Privacy &amp; GDPR</a>
+        <a href="privacy.html">Privacy Policy &amp; GDPR Compliance</a>
       </div>
     </div>`;
 }
