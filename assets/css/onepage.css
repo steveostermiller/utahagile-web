@@ -34,6 +34,8 @@ h3 { font-size: 1.3125rem; }
    Reuses .video-grid's 2-col layout from style.css; --thumbs just needs
    its own button/image/play-badge styling. */
 .video-grid--thumbs { align-items: start; }
+.video-grid--3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 900px) { .video-grid--3 { grid-template-columns: 1fr; } }
 .video-thumb {
   display: block; width: 100%; padding: 0; border: 0; background: none; cursor: pointer;
   text-align: left; font-family: inherit; color: inherit;
