@@ -8,12 +8,24 @@
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="alternate icon" href="assets/img/favicon.png">
   <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    /* Match the current site's footer (lighter blue, matching the Get
+       Involved icons) instead of the old dark-navy shared footer. */
+    .site-footer { background: #2494DC; }
+    .site-footer a { text-decoration: underline; }
+    .footer-logo { height: 46px; width: auto; filter: brightness(0) invert(1); }
+    .social-icons { display: flex; gap: .65rem; align-items: center; flex-wrap: wrap; margin-top: .6rem; }
+    .social-icons a { display: inline-flex; }
+    .social-icons img { width: 34px; height: 34px; display: block; opacity: .9; }
+    .social-icons a:hover img { opacity: 1; }
+  </style>
 </head>
 <body>
   <header class="site-header" id="site-header"></header>
   <section class="section">
     <div class="container" style="max-width:760px">
       <h1>Privacy Policy &amp; GDPR Compliance</h1>
+      <p><em>Last updated: July 22, 2026</em></p>
 
       <h2>Privacy Notice</h2>
       <p>This privacy notice discloses the privacy practices for Utah Agile. This privacy notice
@@ -47,7 +59,7 @@
         <li>Express any concern you have about our use of your data.</li>
       </ul>
       <p>If you feel that we are not abiding by this privacy policy, you should contact us
-        immediately via email at <a href="mailto:privacy@utahagile.com">privacy@utahagile.org</a>.</p>
+        immediately via email at <a href="mailto:privacy@utahagile.org">privacy@utahagile.org</a>.</p>
 
       <h2>GDPR Compliance Information</h2>
 
@@ -60,57 +72,34 @@
       <p>Our website contains a voluntary Subscribe Form. The single data input field requests
         an email.</p>
       <p>When a site visitor enters an email into our Subscribe Form, that email is automatically
-        added to our Wix Contact List. This is a distribution list for emails containing
-        community updates.</p>
+        added to our mailing list with MailerLite, our email newsletter provider. This is a
+        distribution list for emails containing community updates.</p>
 
       <h3>Cookies</h3>
       <p>Resource: <a href="http://www.allaboutcookies.org/">All About Cookies</a></p>
-      <p>Our website platform provider, Wix, does integrate cookies which are categorized as
-        essential cookies to (<a href="https://support.wix.com/en/article/cookies-and-your-wix-site">see Wix's list of essential cookies here</a>):</p>
-      <ul>
-        <li>provide a great experience for our visitors</li>
-        <li>monitor security of our site</li>
-        <li>monitor and analyze the performance, operation and effectiveness of Wix's platform.</li>
-        <li>ensure our platform is secure and safe to use.</li>
-      </ul>
-      <p>Additionally, the Wix platform gives users the ability to add multiple
-        <a href="https://support.wix.com/en/article/important-information-about-editor-elements-third-party-apps-custom-code-and-the-cookie-banner">elements and apps</a>,
-        codes, and third-party applications. Such apps and integrations create the possibility
-        for our website to include other types of (non-essential) cookies which require
-        affirmative GDPR consent.</p>
-      <p>To enable our site visitors to grant consent, we utilize a Cookie Banner. This feature
-        automatically disables the usage of non-essential cookies and scripts until our visitors
-        provide consent. Certain analytics and marketing integrations will only work after a
-        visitor approves using the relevant cookies.</p>
-      <p>The Cookie Banner feature automatically disables the following integrations before
-        obtaining visitor consent:</p>
-      <ul>
-        <li>Analytics cookies: Analytical tools like Google Analytics, Hotjar and Wix Analytics.</li>
-      </ul>
+      <p>Our website is a static site and does not itself set tracking cookies. Our Subscribe
+        Form is provided by MailerLite, which may set its own cookies when you interact with
+        it &mdash; see <a href="https://www.mailerlite.com/legal/privacy-policy">MailerLite's
+        privacy policy</a> for details.</p>
+      <p>We do not currently use any analytics or advertising cookies on this site. If that
+        changes in the future, we will update this policy and provide a consent option for any
+        non-essential cookies.</p>
 
-      <h3>What isn't covered by the Cookie Banner?</h3>
-      <p>There are elements and apps that the Cookie Banner cannot control. In other words, Wix
-        cannot guarantee that the Cookie Banner is able to block potential non-essential cookies
-        from these parties:</p>
-      <ul>
-        <li>Social tools</li>
-      </ul>
-      <p><strong>Embedded content from other websites</strong></p>
-      <p>Pages on this site may include embedded content (e.g. videos, images, articles, etc.).
-        Embedded content from other websites behaves in the exact same way as if the visitor has
-        visited the other website.</p>
+      <h3>Embedded content from other websites</h3>
+      <p>Pages on this site may include embedded content (e.g. videos, images, articles, etc.),
+        such as YouTube or Vimeo videos. Embedded content from other websites behaves in the
+        exact same way as if the visitor has visited the other website.</p>
       <p>Those websites may collect data about you, use cookies, embed additional third-party
         tracking, and monitor your interaction with that embedded content, including tracing your
         interaction with the embedded content if you have an account and are logged in to that
         website.</p>
 
       <h3>Analytics</h3>
-      <p>Our website uses Wix Analytics. A Cookie Banner feature automatically disables Wix
-        Analytics before obtaining visitor consent.</p>
+      <p>We do not currently use website analytics.</p>
 
       <h3>Who we share your data with</h3>
       <p>We don't share any data with anyone. The email a visitor submits through our Subscribe
-        Forms on our website will only be used to send you information about upcoming events or
+        Form on our website will only be used to send you information about upcoming events or
         other information we think will be interesting to you as a member of this community.</p>
 
       <h3>How long we retain your data</h3>
@@ -119,21 +108,22 @@
         further communication.</p>
 
       <h3>Where we send your data</h3>
-      <p>We do not send Contact List information anywhere.</p>
+      <p>We do not send subscriber list information anywhere beyond our email newsletter
+        provider, MailerLite.</p>
 
       <h3>Our contact information</h3>
       <p>Contact us for any questions at <a href="mailto:privacy@utahagile.org">privacy@utahagile.org</a></p>
 
       <h3>How we protect your data</h3>
-      <p>Subscriber emails are stored in a Wix "Contact List" application. Our website is hosted
-        by Wix, a GDPR compliant service (<a href="https://support.wix.com/en/article/general-data-protection-regulation-gdpr">read more</a>).</p>
+      <p>Subscriber emails are stored with MailerLite, our email newsletter provider. Our website
+        itself is a static site with no server-side database, hosted on GitHub Pages.</p>
 
       <h3>What data breach procedures we have in place</h3>
-      <p>We notify all involved when we receive any notice of possible breach from our website
-        provider.</p>
+      <p>We notify all involved when we receive any notice of possible breach from our email
+        newsletter provider or website host.</p>
 
       <h3>What third parties we receive data from</h3>
-      <p>We don't receive any data from third parties, other than Wix Analytics.</p>
+      <p>We don't receive any data from third parties.</p>
 
       <h3>What automated decision making and/or profiling we do with user data</h3>
       <p>When someone enters an email into our Subscribe Form, an automatic, welcome
@@ -141,7 +131,30 @@
         link to unsubscribe.</p>
     </div>
   </section>
-  <footer class="site-footer" id="site-footer"></footer>
+  <footer class="site-footer">
+    <div class="container site-footer__grid">
+      <div>
+        <img src="assets/img/logo.png" alt="Utah Agile" class="footer-logo">
+        <p style="margin:.5rem 0">A 501(c)6 nonprofit convening Utah's agile professionals.<br>
+          <a href="mailto:info@utahagile.org">info@utahagile.org</a></p>
+        <div class="social-icons">
+          <a href="https://www.youtube.com/@utahagile" title="YouTube" aria-label="YouTube"><img src="assets/img/social/youtube.png" alt="YouTube"></a>
+          <a href="https://www.linkedin.com/groups/8360116/" title="LinkedIn" aria-label="LinkedIn"><img src="assets/img/social/linkedin.png" alt="LinkedIn"></a>
+          <a href="https://twitter.com/utahagile/" title="Twitter" aria-label="Twitter"><img src="assets/img/social/twitter.png" alt="Twitter"></a>
+          <a href="https://www.meetup.com/utahagile/" title="Meetup" aria-label="Meetup"><img src="assets/img/social/meetup.png" alt="Meetup"></a>
+          <a href="https://utahagilists.slack.com/" title="Slack" aria-label="Slack"><img src="assets/img/social/slack.png" alt="Slack"></a>
+          <a href="https://www.facebook.com/utahagile" title="Facebook" aria-label="Facebook"><img src="assets/img/social/facebook.png" alt="Facebook"></a>
+        </div>
+      </div>
+      <div>
+        <span id="footer-year"></span><br>
+        <a href="privacy.html">Privacy Policy &amp; GDPR Compliance</a>
+      </div>
+    </div>
+  </footer>
   <script src="assets/js/site.js"></script>
+  <script>
+    document.getElementById('footer-year').textContent = '© ' + new Date().getFullYear() + ' Utah Agile';
+  </script>
 </body>
 </html>
