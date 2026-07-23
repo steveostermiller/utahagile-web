@@ -1,84 +1,10 @@
 /* Utah Agile — shared site behavior.
-   Injects the header + footer on every page (so you edit them in ONE place),
-   handles the mobile menu, and renders events from data/events.json. */
+   Renders events from data/events.json wherever a [data-events] element
+   exists. Header/footer are static markup directly in each page now that
+   the site is a single page (index.html) plus privacy.html. */
 
-const NAV = [
-  { label: "Events",       href: "events.html" },
-  { label: "About",        href: "about.html" },
-  { label: "Speakers",     href: "speakers.html" },
-  { label: "Sponsorship",  href: "sponsorship.html" },
-  { label: "Jobs",         href: "jobs.html" },
-  { label: "Volunteer",    href: "volunteer.html" },
-];
+const MEETUP_URL = "https://www.meetup.com/utahagile/";
 
-// Exact links + icons taken from the original site's footer.
-const SOCIAL = {
-  youtube:  "https://www.youtube.com/@utahagile",
-  linkedin: "https://www.linkedin.com/groups/8360116/",
-  twitter:  "https://twitter.com/utahagile/",
-  meetup:   "https://www.meetup.com/utahagile/",
-  slack:    "https://utahagilists.slack.com/",
-  facebook: "https://www.facebook.com/utahagile",
-};
-
-const SOCIAL_ORDER = [
-  ["youtube",  "YouTube"],
-  ["linkedin", "LinkedIn"],
-  ["twitter",  "Twitter"],
-  ["meetup",   "Meetup"],
-  ["slack",    "Slack"],
-  ["facebook", "Facebook"],
-];
-
-function socialIconsHTML() {
-  return `<div class="social-icons">` + SOCIAL_ORDER.map(([k, label]) =>
-    `<a href="${SOCIAL[k]}" title="${label}" aria-label="${label}">
-       <img src="assets/img/social/${k}.png" alt="${label}"></a>`).join("") + `</div>`;
-}
-
-function renderHeader() {
-  const el = document.getElementById("site-header");
-  if (!el) return;
-  el.innerHTML = `
-    <div class="container nav">
-      <a class="nav__brand" href="index.html" aria-label="Utah Agile home">
-        <img src="assets/img/logo.png" alt="Utah Agile"
-             onerror="this.replaceWith(document.createTextNode('Utah Agile'))">
-      </a>
-      <button class="nav__toggle" aria-label="Menu" aria-expanded="false">&#9776;</button>
-      <nav class="nav__links">
-        ${NAV.map(n => `<a href="${n.href}">${n.label}</a>`).join("")}
-        <a class="btn btn--primary" href="index.html#subscribe">Subscribe</a>
-      </nav>
-    </div>`;
-  const toggle = el.querySelector(".nav__toggle");
-  const links = el.querySelector(".nav__links");
-  toggle.addEventListener("click", () => {
-    const open = links.classList.toggle("open");
-    toggle.setAttribute("aria-expanded", String(open));
-  });
-}
-
-function renderFooter() {
-  const el = document.getElementById("site-footer");
-  if (!el) return;
-  const year = new Date().getFullYear();
-  el.innerHTML = `
-    <div class="container site-footer__grid">
-      <div>
-        <strong>Utah Agile</strong><br>
-        A 501(c)6 nonprofit uniting Utah's agile community.<br>
-        <a href="mailto:info@utahagile.org">info@utahagile.org</a>
-        ${socialIconsHTML()}
-      </div>
-      <div>
-        &copy; ${year} Utah Agile<br>
-        <a href="privacy.html">Privacy Policy &amp; GDPR Compliance</a>
-      </div>
-    </div>`;
-}
-
-/* ---------- Events (from data/events.json, generated from Meetup) ---------- */
 function formatEvent(ev) {
   const start = new Date(ev.start);
   const month = start.toLocaleString("en-US", { month: "short" });
@@ -123,12 +49,8 @@ async function renderEvents() {
     c.innerHTML = list.length
       ? list.map(formatEvent).join("")
       : `<p class="events-empty">No upcoming events scheduled right now &mdash;
-         check our <a href="${SOCIAL.meetup}">Meetup page</a> or subscribe below.</p>`;
+         check our <a href="${MEETUP_URL}">Meetup page</a> or subscribe below.</p>`;
   });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  renderHeader();
-  renderFooter();
-  renderEvents();
-});
+document.addEventListener("DOMContentLoaded", renderEvents);

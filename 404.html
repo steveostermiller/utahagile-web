@@ -7,18 +7,88 @@
   <link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
   <link rel="alternate icon" href="assets/img/favicon.png">
   <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/onepage.css">
 </head>
 <body>
-  <header class="site-header" id="site-header"></header>
+
+<!-- ================= Header (same as index.html) ================= -->
+<header class="site-header">
+  <div class="container nav">
+    <a class="nav__brand" href="index.html" aria-label="Utah Agile home">
+      <img src="assets/img/logo.png" alt="Utah Agile">
+    </a>
+    <button class="nav__toggle" aria-label="Menu" aria-expanded="false">&#9776;</button>
+    <nav class="nav__links">
+      <a href="index.html#events">Events</a>
+      <a href="index.html#about">About</a>
+      <div class="nav__dropdown">
+        <a href="index.html#get-involved" class="nav__dropdown-toggle">Get Involved &#9662;</a>
+        <div class="nav__dropdown-menu">
+          <div class="nav__dropdown-menu-card">
+            <a href="index.html#seus">Earn SEUs</a>
+            <a href="index.html#network">Network</a>
+            <a href="index.html#speakers">Become a Speaker</a>
+            <a href="index.html#volunteer">Volunteer</a>
+            <a href="index.html#sponsorship">Sponsorship</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+  </div>
+</header>
+
   <section class="section">
     <div class="container" style="max-width:640px;text-align:center">
       <h1>Page not found</h1>
       <p class="lead">We couldn't find that page. It may have moved.</p>
       <p><a class="btn btn--primary" href="index.html">Back to home</a>
-         &nbsp; <a class="btn btn--ghost" style="color:var(--brand);border-color:var(--brand)" href="events.html">See events</a></p>
+         &nbsp; <a class="btn btn--ghost" style="color:var(--brand);border-color:var(--brand)" href="index.html#events">See events</a></p>
     </div>
   </section>
-  <footer class="site-footer" id="site-footer"></footer>
+
+  <footer class="site-footer">
+    <div class="container site-footer__grid">
+      <div class="site-footer__contact">
+        <a href="mailto:info@utahagile.org">Contact Utah Agile</a>
+      </div>
+      <div class="social-icons">
+        <a href="https://www.youtube.com/@utahagile" title="YouTube" aria-label="YouTube"><img src="assets/img/social/youtube.png" alt="YouTube"></a>
+        <a href="https://www.linkedin.com/groups/8360116/" title="LinkedIn" aria-label="LinkedIn"><img src="assets/img/social/linkedin.png" alt="LinkedIn"></a>
+        <a href="https://twitter.com/utahagile/" title="Twitter" aria-label="Twitter"><img src="assets/img/social/twitter.png" alt="Twitter"></a>
+        <a href="https://www.meetup.com/utahagile/" title="Meetup" aria-label="Meetup"><img src="assets/img/social/meetup.png" alt="Meetup"></a>
+        <a href="https://utahagilists.slack.com/" title="Slack" aria-label="Slack"><img src="assets/img/social/slack.png" alt="Slack"></a>
+        <a href="https://www.facebook.com/utahagile" title="Facebook" aria-label="Facebook"><img src="assets/img/social/facebook.png" alt="Facebook"></a>
+      </div>
+      <div class="site-footer__legal">
+        <span id="footer-year"></span><br>
+        Utah Agile is a 501(c)6 organization<br>
+        <a href="privacy.html">Privacy Policy &amp; GDPR Compliance</a>
+      </div>
+    </div>
+  </footer>
+
   <script src="assets/js/site.js"></script>
+  <script>
+    document.querySelector('.nav__toggle').addEventListener('click', function () {
+      var links = document.querySelector('.nav__links');
+      var open = links.classList.toggle('open');
+      this.setAttribute('aria-expanded', String(open));
+    });
+    document.querySelector('.nav__dropdown-toggle').addEventListener('click', function (e) {
+      var dd = this.closest('.nav__dropdown');
+      var isMobileNav = window.matchMedia('(max-width: 800px)').matches;
+      if (isMobileNav && !dd.classList.contains('open')) {
+        e.preventDefault();
+        dd.classList.add('open');
+      }
+    });
+    document.querySelectorAll('.nav__links a:not(.nav__dropdown-toggle)').forEach(function (a) {
+      a.addEventListener('click', function () {
+        document.querySelector('.nav__links').classList.remove('open');
+        document.querySelector('.nav__dropdown').classList.remove('open');
+      });
+    });
+    document.getElementById('footer-year').textContent = '© ' + new Date().getFullYear() + ' Utah Agile';
+  </script>
 </body>
 </html>
