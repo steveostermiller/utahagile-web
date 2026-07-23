@@ -9,15 +9,25 @@
   <link rel="alternate icon" href="assets/img/favicon.png">
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
-    /* Match the current site's footer (lighter blue, matching the Get
-       Involved icons) instead of the old dark-navy shared footer. */
+    /* Match the current site's footer: lighter blue (matching the Get
+       Involved icons), 3-column layout (Contact link / centered social
+       icons / stacked legal text), 42px icons, dark-ink links --
+       matched directly from the live site's footer measurements. */
     .site-footer { background: #2494DC; }
     .site-footer a { text-decoration: underline; }
-    .footer-logo { height: 46px; width: auto; filter: brightness(0) invert(1); }
-    .social-icons { display: flex; gap: .65rem; align-items: center; flex-wrap: wrap; margin-top: .6rem; }
+    .site-footer__grid { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1.5rem; }
+    .site-footer__contact a { font-size: 1.125rem; color: var(--ink); }
+    .site-footer .social-icons { justify-content: center; margin-top: 0; }
+    .social-icons { display: flex; gap: .65rem; align-items: center; flex-wrap: wrap; }
     .social-icons a { display: inline-flex; }
-    .social-icons img { width: 34px; height: 34px; display: block; opacity: .9; }
+    .social-icons img { width: 42px; height: 42px; display: block; opacity: .9; }
     .social-icons a:hover img { opacity: 1; }
+    .site-footer__legal { text-align: right; font-size: 1rem; }
+    .site-footer__legal a { font-size: 1rem; color: var(--ink); }
+    @media (max-width: 700px) {
+      .site-footer__grid { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+      .site-footer__legal { text-align: center; }
+    }
   </style>
 </head>
 <body>
@@ -133,21 +143,20 @@
   </section>
   <footer class="site-footer">
     <div class="container site-footer__grid">
-      <div>
-        <img src="assets/img/logo.png" alt="Utah Agile" class="footer-logo">
-        <p style="margin:.5rem 0">A 501(c)6 nonprofit convening Utah's agile professionals.<br>
-          <a href="mailto:info@utahagile.org">info@utahagile.org</a></p>
-        <div class="social-icons">
-          <a href="https://www.youtube.com/@utahagile" title="YouTube" aria-label="YouTube"><img src="assets/img/social/youtube.png" alt="YouTube"></a>
-          <a href="https://www.linkedin.com/groups/8360116/" title="LinkedIn" aria-label="LinkedIn"><img src="assets/img/social/linkedin.png" alt="LinkedIn"></a>
-          <a href="https://twitter.com/utahagile/" title="Twitter" aria-label="Twitter"><img src="assets/img/social/twitter.png" alt="Twitter"></a>
-          <a href="https://www.meetup.com/utahagile/" title="Meetup" aria-label="Meetup"><img src="assets/img/social/meetup.png" alt="Meetup"></a>
-          <a href="https://utahagilists.slack.com/" title="Slack" aria-label="Slack"><img src="assets/img/social/slack.png" alt="Slack"></a>
-          <a href="https://www.facebook.com/utahagile" title="Facebook" aria-label="Facebook"><img src="assets/img/social/facebook.png" alt="Facebook"></a>
-        </div>
+      <div class="site-footer__contact">
+        <a href="mailto:info@utahagile.org">Contact Utah Agile</a>
       </div>
-      <div>
+      <div class="social-icons">
+        <a href="https://www.youtube.com/@utahagile" title="YouTube" aria-label="YouTube"><img src="assets/img/social/youtube.png" alt="YouTube"></a>
+        <a href="https://www.linkedin.com/groups/8360116/" title="LinkedIn" aria-label="LinkedIn"><img src="assets/img/social/linkedin.png" alt="LinkedIn"></a>
+        <a href="https://twitter.com/utahagile/" title="Twitter" aria-label="Twitter"><img src="assets/img/social/twitter.png" alt="Twitter"></a>
+        <a href="https://www.meetup.com/utahagile/" title="Meetup" aria-label="Meetup"><img src="assets/img/social/meetup.png" alt="Meetup"></a>
+        <a href="https://utahagilists.slack.com/" title="Slack" aria-label="Slack"><img src="assets/img/social/slack.png" alt="Slack"></a>
+        <a href="https://www.facebook.com/utahagile" title="Facebook" aria-label="Facebook"><img src="assets/img/social/facebook.png" alt="Facebook"></a>
+      </div>
+      <div class="site-footer__legal">
         <span id="footer-year"></span><br>
+        Utah Agile is a 501(c)6 organization<br>
         <a href="privacy.html">Privacy Policy &amp; GDPR Compliance</a>
       </div>
     </div>
