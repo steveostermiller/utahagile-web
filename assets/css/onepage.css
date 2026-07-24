@@ -133,6 +133,14 @@ a { color: var(--accent); }
 .section-icon-heading h2 { margin: 0; }
 .section-icon { width: 64px; height: 64px; flex-shrink: 0; }
 
+/* The nav-scroll target (id) lives on the <h3>/<h2>, but the 64px icon next
+   to it is taller than the heading text and vertically centered in the same
+   flex row -- so it pokes up above the heading's own top edge. The site-wide
+   [id] { scroll-margin-top: 90px; } in style.css clears the header for the
+   text but not for the icon overhang, leaving the icon visibly clipped.
+   Give these specific headings extra clearance to cover it. */
+.section-icon-heading h2, .section-icon-heading h3 { scroll-margin-top: 115px; }
+
 /* 9 "Explore" quick links, like the original site's grid */
 .explore-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;
