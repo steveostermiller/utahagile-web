@@ -1,0 +1,35 @@
+name: Update videos from YouTube
+
+# Refreshes data/videos.json from the Utah Agile YouTube channel feed so the
+# Past Meetup Events section always shows the 2 most recent videos.
+
+on:
+  schedule:
+    - cron: "0 * * * *"      # hourly
+  workflow_dispatch: {}       # lets you trigger it manually from the Actions tab
+  push:
+    branches: [ main ]        # also refresh on every deploy
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch videos from YouTube
+        run: python3 scripts/build_videos.py
+
+      - name: Commit if videos changed
+        run: |
+          if [[ -n "$(git status --porcelain data/videos.json)" ]]; then
+            git config user.name  "utahagile-bot"
+            git config user.email "actions@users.noreply.github.com"
+            git add data/videos.json
+            git commit -m "chore: refresh videos from YouTube"
+            git push
+          else
+            echo "No video changes."
+          fi

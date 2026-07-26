@@ -93,18 +93,7 @@
     <p>Explore our past meetups on a variety of topics, including scrum, kanban, retrospectives,
       leadership, transformation, organizational change, technical practices, product thinking,
       and so much more.</p>
-    <div class="video-grid video-grid--thumbs">
-      <button type="button" class="video-thumb" data-embed="https://www.youtube.com/embed/0Ywp0cMRnYA?autoplay=1"
-        aria-label="Play: Product Leaders: What's In Your Way?, with Randy Hale">
-        <span class="video-thumb__img"><img src="assets/img/videos/randy-hale.jpg" alt=""><span class="video-thumb__play" aria-hidden="true">&#9658;</span></span>
-        <span class="video-thumb__title">Product Leaders: What's In Your Way?, with Randy Hale</span>
-      </button>
-      <button type="button" class="video-thumb" data-embed="https://www.youtube.com/embed/94sP1E_OgpI?autoplay=1"
-        aria-label="Play: Engineering the Future: Agile for Hardware with MAHD">
-        <span class="video-thumb__img"><img src="assets/img/videos/mahd.jpg" alt=""><span class="video-thumb__play" aria-hidden="true">&#9658;</span></span>
-        <span class="video-thumb__title">Engineering the Future: Agile for Hardware with MAHD</span>
-      </button>
-    </div>
+    <div class="video-grid video-grid--thumbs" data-videos="2"></div>
     <p>Browse our recorded, past Meetup events on
       <a href="https://www.youtube.com/@utahagile">YouTube</a>. To see a complete list of past
       events visit us on <a href="https://www.meetup.com/utahagile/">Meetup</a>.</p>
@@ -516,8 +505,11 @@
     lightboxIframe.src = '';
     document.body.style.overflow = '';
   }
-  document.querySelectorAll('.video-thumb').forEach(function (btn) {
-    btn.addEventListener('click', function () { openLightbox(this.dataset.embed); });
+  // Delegated (not queried once at load) since past-meetup thumbs are
+  // rendered asynchronously by renderVideos() in site.js.
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('.video-thumb');
+    if (btn) openLightbox(btn.dataset.embed);
   });
   document.querySelectorAll('[data-video-close]').forEach(function (el) {
     el.addEventListener('click', closeLightbox);

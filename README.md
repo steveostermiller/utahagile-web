@@ -8,6 +8,9 @@ event entry, no backend to maintain.
   `privacy.html`. Plain static HTML/CSS, no build step.
 - **Events** — pulled automatically from the Meetup iCal feed by
   `scripts/build_events.py`, on a schedule via GitHub Actions. No admin area.
+- **Past meetup videos** — the 2 most recent YouTube uploads are pulled
+  automatically by `scripts/build_videos.py`, on the same schedule. No admin
+  area; upload to YouTube and the site updates itself.
 - **Newsletter** — not yet live. The Subscribe button/section is commented out
   in `index.html` until a MailerLite embed is added (see below).
 
@@ -26,6 +29,7 @@ Refresh events locally with:
 
 ```bash
 python3 scripts/build_events.py
+python3 scripts/build_videos.py
 ```
 
 ---
@@ -39,6 +43,23 @@ python3 scripts/build_events.py
    a `data-events` attribute becomes an events list (`data-events="3"` limits to 3).
 
 **You never touch the site to update events** — just manage them in Meetup.
+
+---
+
+## How past-meetup videos work
+
+1. `.github/workflows/update-videos.yml` runs `scripts/build_videos.py` hourly.
+2. The script reads the Utah Agile YouTube channel's public Atom feed
+   (`https://www.youtube.com/feeds/videos.xml?channel_id=...`, no API key
+   needed) and writes the 2 most recent uploads to `data/videos.json`, using
+   YouTube's hosted thumbnail for each.
+3. The site renders that JSON client-side. Any element with a `data-videos`
+   attribute becomes a video-thumbnail grid (`data-videos="2"` limits to 2).
+
+**You never touch the site to update past-meetup videos** — just upload to
+YouTube. (The "Past Conference Events" videos below it are still hand-picked
+Vimeo embeds in `index.html`, since those are a fixed historical set, not an
+ongoing feed.)
 
 ---
 

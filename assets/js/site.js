@@ -1,7 +1,9 @@
 /* Utah Agile — shared site behavior.
    Renders events from data/events.json wherever a [data-events] element
-   exists. Header/footer are static markup directly in each page now that
-   the site is a single page (index.html) plus privacy.html. */
+   exists, and past-meetup videos from data/videos.json wherever a
+   [data-videos] element exists. Header/footer are static markup directly in
+   each page now that the site is a single page (index.html) plus
+   privacy.html. */
 
 const MEETUP_URL = "https://www.meetup.com/utahagile/";
 
@@ -53,4 +55,29 @@ async function renderEvents() {
   });
 }
 
+function formatVideo(v) {
+  return `
+    <button type="button" class="video-thumb" data-embed="${v.embed}" aria-label="Play: ${v.title}">
+      <span class="video-thumb__img"><img src="${v.thumbnail}" alt=""><span class="video-thumb__play" aria-hidden="true">&#9658;</span></span>
+      <span class="video-thumb__title">${v.title}</span>
+    </button>`;
+}
+
+async function renderVideos() {
+  const containers = document.querySelectorAll("[data-videos]");
+  if (!containers.length) return;
+  let videos = [];
+  try {
+    const res = await fetch("data/videos.json", { cache: "no-store" });
+    videos = await res.json();
+  } catch (e) {
+    console.error("Could not load videos.json", e);
+  }
+  containers.forEach(c => {
+    const limit = parseInt(c.dataset.videos, 10) || videos.length;
+    c.innerHTML = videos.slice(0, limit).map(formatVideo).join("");
+  });
+}
+
 document.addEventListener("DOMContentLoaded", renderEvents);
+document.addEventListener("DOMContentLoaded", renderVideos);
