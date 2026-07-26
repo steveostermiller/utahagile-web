@@ -13,6 +13,9 @@ event entry, no backend to maintain.
   area; upload to YouTube and the site updates itself.
 - **Newsletter** — not yet live. The Subscribe button/section is commented out
   in `index.html` until a MailerLite embed is added (see below).
+- **Checks** — every push/PR runs `scripts/check_site.py` (see below), which
+  catches broken HTML, missing local assets/images, dead anchor links, and
+  malformed `data/*.json` before they reach the live site.
 
 ---
 
@@ -60,6 +63,27 @@ python3 scripts/build_videos.py
 YouTube. (The "Past Conference Events" videos below it are still hand-picked
 Vimeo embeds in `index.html`, since those are a fixed historical set, not an
 ongoing feed.)
+
+---
+
+## Checks (CI)
+
+1. `.github/workflows/checks.yml` runs `scripts/check_site.py` on every push
+   and pull request — no network calls, pure stdlib, so it's fast and never
+   flaky.
+2. It validates `index.html`, `privacy.html`, and `404.html` for: unclosed/stray
+   HTML tags, local `href`/`src` references that point at a missing file, and
+   anchor links (`#section` and cross-page `index.html#section`, the pattern
+   `privacy.html`/`404.html` use) that don't resolve to a real `id`.
+3. It also validates `data/events.json` and `data/videos.json` are present,
+   valid JSON, a list, and that every item has its required fields — this is
+   what would catch Meetup or YouTube silently changing their feed format and
+   `build_events.py`/`build_videos.py` writing out garbage.
+
+Run it locally with `python3 scripts/check_site.py`. A failing check fails the
+GitHub Actions run but does **not** block `main` from deploying by itself
+(there's no branch protection requiring it to pass) — it's a visible red X in
+the Actions tab, not a hard gate, unless you want to turn that on later.
 
 ---
 

@@ -1,0 +1,25 @@
+name: Site checks
+
+# Runs on every push and pull request to catch broken HTML, missing local
+# assets, dead in-page/cross-page anchors, and malformed data files before
+# they reach the live site.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate HTML, assets, anchors, and data files
+        run: python3 scripts/check_site.py
