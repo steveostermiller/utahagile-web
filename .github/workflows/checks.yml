@@ -1,8 +1,8 @@
 name: Site checks
 
 # Runs on every push and pull request to catch broken HTML, missing local
-# assets, dead in-page/cross-page anchors, and malformed data files before
-# they reach the live site.
+# assets, dead in-page/cross-page anchors, malformed data files, and broken
+# Meetup/YouTube feed-parsing logic before they reach the live site.
 on:
   push:
     branches: [main]
@@ -23,3 +23,6 @@ jobs:
 
       - name: Validate HTML, assets, anchors, and data files
         run: python3 scripts/check_site.py
+
+      - name: Run unit tests (offline — no live network calls)
+        run: python3 -m unittest discover -s tests -v

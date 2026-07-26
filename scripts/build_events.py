@@ -78,11 +78,25 @@ def parse_events(ical: str) -> list:
     return events
 
 
+def looks_like_ical(text: str) -> bool:
+    return "BEGIN:VCALENDAR" in text
+
+
 def main() -> int:
     try:
         ical = fetch_ical(ICAL_URL)
     except Exception as e:  # network hiccup shouldn't wipe a good file
         print(f"ERROR fetching iCal: {e}", file=sys.stderr)
+        return 1
+
+    # Zero *events* is a normal state (no upcoming meetup scheduled right
+    # now), so we don't guard on an empty result the way build_videos.py
+    # does. But if Meetup stops returning a calendar at all (redirect, error
+    # page, feed retired), that's a real break — don't let it silently wipe
+    # a good events.json with an empty list.
+    if not looks_like_ical(ical):
+        print("ERROR: fetched content doesn't look like an iCal calendar "
+              "(no BEGIN:VCALENDAR) — refusing to overwrite events.json", file=sys.stderr)
         return 1
 
     events = parse_events(ical)

@@ -1,0 +1,27 @@
+name: Lighthouse accessibility check
+
+# Runs on every push and pull request to catch accessibility regressions
+# (contrast, missing alt text, ARIA issues, etc.) as soon as they're
+# introduced. Serves the checked-out static files directly with Python's
+# http.server (same as local dev — see README) rather than hitting the live
+# site, so it reflects the change actually being pushed, not last deploy.
+# Only the accessibility category is a hard gate (see .lighthouserc.json);
+# performance/SEO/best-practices scores are informational only.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run Lighthouse CI (accessibility gate)
+        run: npx @lhci/cli@0.14.x autorun

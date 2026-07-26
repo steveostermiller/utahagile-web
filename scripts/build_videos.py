@@ -50,6 +50,21 @@ def parse_videos(xml_bytes: bytes) -> list:
     return videos[:LIMIT]
 
 
+def save(videos: list, out_path: Path) -> bool:
+    """Write videos to out_path. Refuses to overwrite with an empty result —
+    an active channel's feed should never legitimately return zero videos, so
+    a feed-format change fails loudly here instead of silently blanking the
+    Past Meetup Events section."""
+    if not videos:
+        print(f"ERROR: parsed 0 videos from feed — refusing to overwrite {out_path}",
+              file=sys.stderr)
+        return False
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(videos, indent=2) + "\n")
+    print(f"Wrote {len(videos)} video(s) to {out_path}")
+    return True
+
+
 def main() -> int:
     try:
         xml_bytes = fetch_feed(FEED_URL)
@@ -58,10 +73,7 @@ def main() -> int:
         return 1
 
     videos = parse_videos(xml_bytes)
-    OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OUT_PATH.write_text(json.dumps(videos, indent=2) + "\n")
-    print(f"Wrote {len(videos)} video(s) to {OUT_PATH}")
-    return 0
+    return 0 if save(videos, OUT_PATH) else 1
 
 
 if __name__ == "__main__":

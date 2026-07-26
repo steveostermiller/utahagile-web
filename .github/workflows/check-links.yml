@@ -1,0 +1,20 @@
+name: Check external links
+
+# Weekly (not on every push) check that external links on the site — sponsor
+# sites, social icons, Meetup, YouTube, adviser LinkedIn profiles — still
+# resolve. Kept separate from checks.yml since requests to third-party sites
+# are inherently flaky and would make the fast, deterministic push/PR checks
+# unreliable.
+on:
+  schedule:
+    - cron: "0 13 * * 1"   # Monday 13:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check external links
+        run: python3 scripts/check_links.py
