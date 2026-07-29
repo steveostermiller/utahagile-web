@@ -131,6 +131,11 @@ h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); margin-top: 0; }
 .event__date .d { font-size: 1.7rem; font-weight: 800; line-height: 1; }
 .event__body h3 { margin: 0 0 .3rem; }
 .event__meta { color: var(--muted); font-size: .95rem; margin: 0 0 .5rem; }
+.event__thumb {
+  flex: 0 0 96px; width: 96px; height: 96px; object-fit: cover;
+  border-radius: var(--radius); background: var(--bg-alt);
+}
+@media (max-width: 560px) { .event__thumb { display: none; } }
 .events-empty { color: var(--muted); font-style: italic; }
 
 /* ---------- Newsletter ---------- */

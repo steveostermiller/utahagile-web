@@ -16,6 +16,8 @@ function formatEvent(ev) {
     hour: "numeric", minute: "2-digit", timeZoneName: "short",
   });
   const loc = ev.location ? ` &middot; ${ev.location}` : "";
+  const thumb = ev.thumbnail
+    ? `<img class="event__thumb" src="${ev.thumbnail}" alt="" loading="lazy">` : "";
   return `
     <article class="event">
       <div class="event__date">
@@ -27,6 +29,7 @@ function formatEvent(ev) {
         <p class="event__meta">${when}${loc}</p>
         <a class="btn btn--primary" href="${ev.url}">RSVP on Meetup</a>
       </div>
+      ${thumb}
     </article>`;
 }
 

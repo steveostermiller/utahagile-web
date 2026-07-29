@@ -4,6 +4,15 @@ Fetch upcoming events from the Utah Agile Meetup iCal feed and write them to
 data/events.json. Zero third-party dependencies (stdlib only) so it runs
 anywhere, including a stock GitHub Actions runner.
 
+Meetup's iCal feed does not carry a venue or event photo, even when both are
+public on the event page — confirmed by inspecting the raw feed and the
+page's own structured data. So each event is additionally (best-effort)
+enriched by fetching its own Meetup page and reading the schema.org Event
+JSON-LD block embedded there, which does include a location and image(s).
+This enrichment step is optional per event: if the fetch fails or Meetup
+changes that markup, the event still ships with its reliable iCal fields
+(title/date/RSVP link) — it just won't have a location or thumbnail.
+
 Run locally:   python3 scripts/build_events.py
 In CI:         invoked on a schedule by .github/workflows/update-events.yml
 """
@@ -17,6 +26,7 @@ from pathlib import Path
 
 ICAL_URL = "https://www.meetup.com/utahagile/events/ical/"
 OUT_PATH = Path(__file__).resolve().parent.parent / "data" / "events.json"
+ENRICH_LIMIT = 10  # cap how many event pages we fetch per run
 
 
 def fetch_ical(url: str) -> str:
@@ -82,6 +92,72 @@ def looks_like_ical(text: str) -> bool:
     return "BEGIN:VCALENDAR" in text
 
 
+def fetch_event_page(url: str) -> str:
+    req = urllib.request.Request(url, headers={"User-Agent": "utahagile-web/1.0"})
+    with urllib.request.urlopen(req, timeout=20) as resp:
+        return resp.read().decode("utf-8", errors="replace")
+
+
+def extract_event_schema(html: str):
+    """Return the schema.org Event dict embedded in a Meetup event page's
+    JSON-LD, or None if it's missing/malformed. A page can have several
+    JSON-LD blocks (Organization, BreadcrumbList, ...); only one is the
+    Event itself."""
+    for block in re.findall(
+        r'<script type="application/ld\+json"[^>]*>(.*?)</script>', html, re.DOTALL
+    ):
+        try:
+            data = json.loads(block)
+        except json.JSONDecodeError:
+            continue
+        for item in (data if isinstance(data, list) else [data]):
+            if isinstance(item, dict) and item.get("@type") == "Event":
+                return item
+    return None
+
+
+def location_from_schema(event_schema: dict):
+    place = event_schema.get("location")
+    if not isinstance(place, dict):
+        return None
+    address = place.get("address")
+    street = address.get("streetAddress") if isinstance(address, dict) else None
+    parts = [p for p in (place.get("name"), street) if p]
+    return " · ".join(parts) if parts else None
+
+
+def thumbnail_from_schema(event_schema: dict):
+    images = event_schema.get("image")
+    if isinstance(images, list) and images:
+        return images[0]
+    if isinstance(images, str):
+        return images
+    return None
+
+
+def enrich_event(ev: dict) -> dict:
+    """Best-effort: fetch the event's own Meetup page and merge in a venue
+    and thumbnail image from its embedded schema.org data — fields the iCal
+    feed doesn't carry. Never raises; on any failure ev is returned
+    unchanged, so title/date/RSVP still work even if this fails."""
+    url = ev.get("url")
+    if not url:
+        return ev
+    try:
+        schema = extract_event_schema(fetch_event_page(url))
+        if not schema:
+            return ev
+        location = location_from_schema(schema)
+        if location:
+            ev["location"] = location
+        thumbnail = thumbnail_from_schema(schema)
+        if thumbnail:
+            ev["thumbnail"] = thumbnail
+    except Exception as e:
+        print(f"WARNING: could not enrich event '{ev.get('title')}': {e}", file=sys.stderr)
+    return ev
+
+
 def main() -> int:
     try:
         ical = fetch_ical(ICAL_URL)
@@ -100,6 +176,9 @@ def main() -> int:
         return 1
 
     events = parse_events(ical)
+    for ev in events[:ENRICH_LIMIT]:
+        enrich_event(ev)
+
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     OUT_PATH.write_text(json.dumps(events, indent=2) + "\n")
     print(f"Wrote {len(events)} event(s) to {OUT_PATH}")

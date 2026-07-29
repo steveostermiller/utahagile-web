@@ -50,6 +50,19 @@ python3 scripts/build_videos.py
 
 **You never touch the site to update events** — just manage them in Meetup.
 
+**Venue and photo enrichment:** Meetup's iCal feed doesn't include a venue or
+event photo, even when both are public on the event page (confirmed by
+inspecting the raw feed directly). So for each event (up to `ENRICH_LIMIT`,
+currently 10), the script also fetches that event's own Meetup page and reads
+the `schema.org/Event` JSON-LD block embedded there, which does have both. This
+is best-effort: if a fetch fails or Meetup changes that markup, the event still
+ships with its reliable iCal fields (title/date/RSVP link) — it just won't have
+a `location` or `thumbnail`. As long as the venue and a photo are public on the
+Meetup event itself, this picks them up automatically — there's no specific
+iCal field to fill in (Meetup's iCal feed doesn't carry either one at all,
+confirmed by inspecting the raw feed directly, which is why this reads the
+event page instead).
+
 ---
 
 ## How past-meetup videos work
