@@ -96,10 +96,11 @@
 
       <h3 id="cookies">Cookies</h3>
       <p>Resource: <a href="http://www.allaboutcookies.org/">All About Cookies</a></p>
-      <p>Our website itself does not set any tracking cookies, and we do not use analytics or
-        advertising cookies. The newsletter signup form in the Subscribe section is the one
-        exception: it's provided by our email service provider, Sender.net, and their script sets
-        a handful of cookies (such as <code>sender_subscriber_id</code> and
+      <p>Our website itself does not set any tracking cookies. We do use a cookie-free analytics
+        service (see "Analytics" below) and do not use any advertising cookies. The newsletter
+        signup form in the Subscribe section is the one exception that sets cookies: it's provided
+        by our email service provider, Sender.net, and their script sets a handful of cookies
+        (such as <code>sender_subscriber_id</code> and
         <code>sender_country</code>) to identify and manage your subscription and localize the
         form. Since this script is a third-party script, we don't control exactly which cookies
         it sets or how that may change over time.</p>
@@ -123,7 +124,11 @@
         not only when you choose to play a video or click through to an event.</p>
 
       <h3>Analytics</h3>
-      <p>We do not currently use website analytics.</p>
+      <p>We use <a href="https://www.cloudflare.com/web-analytics/">Cloudflare Web Analytics</a> to
+        understand overall traffic to this site (page views, referring sites, approximate visitor
+        counts). Cloudflare states this service does not use cookies, local storage, or other
+        client-side state, and does not fingerprint visitors via IP address or user agent — we use
+        it only to see traffic levels, not to identify or target individual visitors.</p>
 
       <h3>Who we share your data with</h3>
       <p>If you sign up for our newsletter, your name and email address are shared with
@@ -205,5 +210,8 @@
     });
     document.getElementById('footer-year').textContent = '© ' + new Date().getFullYear() + ' Utah Agile';
   </script>
+  <!-- Cloudflare Web Analytics -->
+  <script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2b6cd3da4e3343a79e93b080a88f707e"}'></script>
+  <!-- End Cloudflare Web Analytics -->
 </body>
 </html>
