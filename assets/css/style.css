@@ -38,6 +38,8 @@ a:hover { text-decoration: underline; }
 
 img { max-width: 100%; height: auto; display: block; }
 
+code { font-size: 0.85em; } /* monospace fonts render visually larger than body text at 1em */
+
 .container { max-width: var(--maxw); margin: 0 auto; padding: 0 1.25rem; }
 
 .section { padding: 3.5rem 0; }
