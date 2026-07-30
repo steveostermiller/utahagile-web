@@ -142,6 +142,21 @@ h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); margin-top: 0; }
 .newsletter { background: var(--brand-dark); color: #fff; }
 .newsletter h2 { color: #fff; }
 .newsletter .lead { color: rgba(255,255,255,.8); }
+.newsletter__consent-notice { color: rgba(255,255,255,.9); }
+.newsletter__consent-notice .btn { margin-left: .6rem; }
+
+/* ---------- Cookie consent banner ---------- */
+.cookie-banner {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 1000;
+  background: var(--brand); color: #fff;
+  padding: 1rem 1.25rem;
+  display: flex; flex-wrap: wrap; gap: .75rem 1.5rem; align-items: center; justify-content: center;
+  box-shadow: 0 -4px 16px rgba(0,0,0,.2);
+}
+.cookie-banner[hidden] { display: none; } /* [hidden] alone loses to the unconditional display:flex above */
+.cookie-banner p { margin: 0; max-width: 640px; font-size: .92rem; }
+.cookie-banner a { color: #fff; }
+.cookie-banner__actions { display: flex; gap: .6rem; flex-shrink: 0; }
 
 /* ---------- Hero with background image ---------- */
 .hero--home {

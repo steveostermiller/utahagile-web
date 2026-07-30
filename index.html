@@ -34,9 +34,7 @@
           </div>
         </div>
       </div>
-      <!-- Subscribe button hidden until MailerLite is built -- see #subscribe section below
       <a class="btn btn--primary" href="#subscribe">Subscribe</a>
-      -->
     </nav>
   </div>
 </header>
@@ -53,9 +51,7 @@
       world to join us. Membership is free.</p>
     <div class="hero__cta">
       <a class="btn btn--primary" href="#events">Find an event</a>
-      <!-- Subscribe CTA hidden until MailerLite is built
       <a class="btn btn--ghost" href="#subscribe">Subscribe</a>
-      -->
     </div>
   </div>
 </section>
@@ -414,21 +410,37 @@
   </div>
 </section>
 
-<!-- Placeholder so any lingering "subscribe" links don't dead-end while the section below is hidden. -->
-<span id="subscribe"></span>
-
-<!-- ================= Subscribe (hidden until MailerLite is built) =================
+<!-- ================= Subscribe ================= -->
 <section class="section newsletter" id="subscribe">
   <div class="container">
     <h2>Subscribe</h2>
     <p class="lead">Be the first to know what's happening in our community.</p>
-    <!- MAILERLITE EMBED GOES HERE (Forms -> Embedded form -> paste HTML snippet) ->
-    <div id="mailerlite-form">
-      <p style="color:#fff">Newsletter form will appear here once the MailerLite embed code is added.</p>
+    <!-- Sender.net embedded form (Forms -> Embedded form). Hidden by default;
+         shown only once the visitor accepts the cookie banner below, since
+         Sender's script sets cookies for anyone it loads for. -->
+    <div id="newsletter-form-wrap" hidden>
+      <div style="text-align: left" class="sender-form-field" data-sender-form-id="erkDOL"></div>
     </div>
+    <p id="newsletter-consent-notice" class="newsletter__consent-notice" hidden>
+      Showing this signup form requires accepting cookies from our email provider — see our
+      <a href="privacy.html#cookies">privacy policy</a>.
+      <button type="button" id="newsletter-consent-accept" class="btn btn--primary">Accept &amp; show form</button>
+      <br>
+      Prefer not to accept cookies?
+      <a href="mailto:subscribe@utahagile.org">Email us</a> and we'll add you manually.
+    </p>
   </div>
 </section>
--->
+
+<!-- ================= Cookie consent banner (gates the Subscribe form above) ================= -->
+<div class="cookie-banner" id="cookie-banner" hidden>
+  <p>The newsletter signup below uses a cookie-setting form from our email provider, Sender.net —
+    we only load it if you accept. <a href="privacy.html#cookies">Learn more</a>.</p>
+  <div class="cookie-banner__actions">
+    <button type="button" class="btn btn--primary" id="cookie-accept">Accept</button>
+    <button type="button" class="btn btn--ghost" id="cookie-decline">Decline</button>
+  </div>
+</div>
 
 
 <!-- ================= Footer ================= -->
@@ -517,6 +529,68 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !lightbox.hidden) closeLightbox();
   });
+
+  // Cookie consent gate for the Sender.net newsletter embed. Sender's script
+  // sets cookies (sender_subscriber_id, sender_country, etc. — see
+  // privacy.html#cookies) for anyone it loads for, so it's only ever loaded
+  // after an explicit Accept, not on page load by default.
+  (function () {
+    var CONSENT_KEY = 'cookieConsent';
+    var banner = document.getElementById('cookie-banner');
+    var formWrap = document.getElementById('newsletter-form-wrap');
+    var notice = document.getElementById('newsletter-consent-notice');
+
+    function loadSenderScript() {
+      (function (s, e, n, d, er) {
+        s['Sender'] = er;
+        s[er] = s[er] || function () {
+          (s[er].q = s[er].q || []).push(arguments)
+        }, s[er].l = 1 * new Date();
+        s[er].on = function (event, callback) {
+          s[er].listeners = s[er].listeners || {};
+          (s[er].listeners[event] = s[er].listeners[event] || []).push(callback);
+        };
+        var a = e.createElement(n),
+            m = e.getElementsByTagName(n)[0];
+        a.async = 1;
+        a.src = d;
+        m.parentNode.insertBefore(a, m);
+      })(window, document, 'script', 'https://cdn.sender.net/accounts_resources/universal.js', 'sender');
+      sender('ed3813c00e2409');
+    }
+
+    function showForm() {
+      formWrap.hidden = false;
+      notice.hidden = true;
+      loadSenderScript();
+    }
+    function showConsentNotice() {
+      formWrap.hidden = true;
+      notice.hidden = false;
+    }
+    function accept() {
+      localStorage.setItem(CONSENT_KEY, 'accepted');
+      banner.hidden = true;
+      showForm();
+    }
+    function decline() {
+      localStorage.setItem(CONSENT_KEY, 'declined');
+      banner.hidden = true;
+      showConsentNotice();
+    }
+
+    var consent = localStorage.getItem(CONSENT_KEY);
+    if (consent === 'accepted') {
+      showForm();
+    } else {
+      showConsentNotice();
+      if (consent !== 'declined') banner.hidden = false;  // undecided — ask
+    }
+
+    document.getElementById('cookie-accept').addEventListener('click', accept);
+    document.getElementById('cookie-decline').addEventListener('click', decline);
+    document.getElementById('newsletter-consent-accept').addEventListener('click', accept);
+  })();
 </script>
 </body>
 </html>

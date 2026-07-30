@@ -18,6 +18,10 @@ site plus a couple of generated JSON feeds:
                          not valid JSON, not a list, or whose items are
                          missing required keys (catches the Meetup/YouTube
                          feed silently changing shape).
+  5. Missing script ids — an element id that inline <script> logic reaches
+                         via getElementById (e.g. the newsletter cookie-
+                         consent gate) going missing or getting renamed,
+                         which wouldn't otherwise show up as a broken link.
 
 External URLs (https://, mailto:, etc.) are intentionally NOT fetched — that
 would make CI flaky and is out of scope for a build-time check.
@@ -40,6 +44,17 @@ VOID = {"meta", "link", "img", "br", "hr", "input", "area", "base",
 DATA_FILES = {
     "data/events.json": ["title", "start"],
     "data/videos.json": ["id", "title", "url", "embed", "thumbnail"],
+}
+
+# Element ids that inline <script> logic depends on by getElementById — a
+# rename/removal here wouldn't break check_html_file's anchor check (nothing
+# links to these via href="#..."), so it needs its own guard. Currently just
+# the newsletter cookie-consent gate in index.html.
+REQUIRED_IDS = {
+    "index.html": {
+        "subscribe", "cookie-banner", "cookie-accept", "cookie-decline",
+        "newsletter-form-wrap", "newsletter-consent-notice", "newsletter-consent-accept",
+    },
 }
 
 
@@ -169,6 +184,11 @@ def main():
         print(f"\n{rel}: {len(p.local_refs)} local asset(s), "
               f"{len(p.anchor_refs)} in-page anchor(s), "
               f"{len(p.cross_page_refs)} cross-page anchor(s), {len(p.ids)} id(s)")
+
+        missing_ids = REQUIRED_IDS.get(rel, set()) - p.ids
+        for missing_id in sorted(missing_ids):
+            problems.append(f"[script-id] required id '{missing_id}' not found "
+                             f"(inline <script> logic depends on it via getElementById)")
 
     # Cross-page anchors (e.g. privacy.html linking to index.html#events) need
     # every page's id set gathered first, so resolve them in a second pass.

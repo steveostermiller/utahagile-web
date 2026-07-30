@@ -11,8 +11,9 @@ event entry, no backend to maintain.
 - **Past meetup videos** — the 2 most recent YouTube uploads are pulled
   automatically by `scripts/build_videos.py`, on the same schedule. No admin
   area; upload to YouTube and the site updates itself.
-- **Newsletter** — not yet live. The Subscribe button/section is commented out
-  in `index.html` until a MailerLite embed is added (see below).
+- **Newsletter** — live via Sender.net (see below). The signup form is
+  cookie-gated behind a consent banner, since Sender's embed script sets
+  cookies for anyone it loads for.
 - **Checks** — every push/PR runs `scripts/check_site.py` and the offline
   unit tests (see below), which catch broken HTML, missing local
   assets/images, dead anchor links, malformed `data/*.json`, and broken
@@ -157,23 +158,49 @@ Run it locally with `python3 scripts/check_links.py`.
 
 ---
 
-## Turn on the newsletter (MailerLite)
+## How the newsletter works
 
-The Subscribe section is currently hidden (commented out) in `index.html` since
-no signup form exists yet. To launch it:
+The Subscribe section (`#subscribe` in `index.html`) uses **Sender.net**, not
+MailerLite — MailerLite's free plan caps out at 250 subscribers, below the
+400+ already imported from Wix, while Sender.net's free plan covers up to
+2,500. Subscribers collect first name, last name, and email; opt-in is
+single-step (Sender's free plan doesn't offer double opt-in).
 
-1. Create a free MailerLite account.
-2. **Import subscribers**: use the CSV you exported from Wix
-   (*Marketing & SEO → Contacts → Export*). MailerLite → Subscribers → Import.
-3. Build an **Embedded form** in MailerLite, copy its HTML snippet.
-4. In `index.html`, un-comment the `<!-- Subscribe (hidden until MailerLite is
-   built) -->` section and the Subscribe buttons in the nav/hero, and paste the
-   embed snippet in place of the `#mailerlite-form` placeholder.
-5. Update `privacy.html` — the "What personal data we collect" section
-   currently states no data is collected, since the form doesn't exist yet.
-   Once the form is live, update that section (and the related "how long we
-   retain," "where we send," and "automated decision making" sections) to
-   describe the real behavior.
+**Cookie consent gate:** Sender's embed script (`universal.js`) sets several
+cookies for anyone it loads for (`sender_subscriber_id`, `sender_country`,
+etc. — inspecting the script directly confirmed this), not just people who
+submit the form. Since the site otherwise sets no cookies at all, the script
+is never loaded by default:
+
+1. On first visit, a banner at the bottom of the page asks the visitor to
+   Accept or Decline.
+2. The Subscribe section itself shows a short explanation + "Accept & show
+   form" button instead of the real form until a choice is made.
+3. Only after Accept does the page inject Sender's script and reveal the
+   actual embedded form (`data-sender-form-id="erkDOL"`). Decline hides the
+   banner and leaves the form hidden, but the visitor can still change their
+   mind later via that same "Accept & show form" button — or email
+   `subscribe@utahagile.org` to be added manually, with zero cookies involved on
+   their end. That mailto fallback is the only cookie-free way to sign up;
+   there's no way to submit the form itself without accepting Sender's
+   script (see the "cookie-free integration" dead end noted in git history —
+   Sender's real API requires a private key that can't safely live in
+   client-side HTML on a backend-less static site).
+4. The choice is remembered in `localStorage` (`cookieConsent`), so returning
+   visitors aren't asked again.
+
+All of this logic lives in a `<script>` block at the bottom of `index.html`
+(not `site.js`, since it's specific to this one page/section). `privacy.html`
+documents the exact cookies and the consent mechanism under "Cookies" and
+"What personal data we collect."
+
+**Known gap:** the actual Sender form fields didn't render when tested on
+`localhost` — the embed script loaded fine and no console errors appeared,
+but no network request to Sender's API happened at all, which points to a
+domain restriction on Sender's side (common anti-embed-theft behavior) rather
+than a bug here. **Verify the real form renders once this is live on
+utahagile.org** — if it still doesn't, check Sender.net's dashboard for an
+allowed-domains setting on this form.
 
 ---
 
@@ -191,13 +218,13 @@ Once the site is live on Pages, in Squarespace **Domains → DNS settings**, rep
 the current Wix records with GitHub Pages' records. Do this only after the new
 site looks right — it's the cutover.
 
-**Order of operations:** export Wix contacts → import to MailerLite (when ready)
+**Order of operations:** export Wix contacts → import to Sender.net (when ready)
 → verify new site → repoint DNS → cancel Wix.
 
 ---
 
 ## Still to do
 
-- [ ] Add MailerLite embed and un-hide the Subscribe section (above)
-- [ ] Update `privacy.html` once MailerLite goes live (above)
+- [ ] Verify the Sender.net form actually renders on the live utahagile.org
+      domain (see "Known gap" above — untestable on localhost)
 - [ ] Verify a real event renders correctly (schedule one on Meetup)
