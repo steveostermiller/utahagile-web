@@ -267,11 +267,3 @@ site looks right — it's the cutover.
 
 **Order of operations:** export Wix contacts → import to Sender.net (when ready)
 → verify new site → repoint DNS → cancel Wix.
-
----
-
-## Still to do
-
-- [ ] Verify the Sender.net form actually renders on the live utahagile.org
-      domain (see "Known gap" above — untestable on localhost)
-- [ ] Verify a real event renders correctly (schedule one on Meetup)
