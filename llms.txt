@@ -1,0 +1,21 @@
+# Utah Agile
+
+> Utah Agile is a free, volunteer-led 501(c)6 nonprofit professional association that convenes Utah's agile professionals through networking, collaboration, mentoring, and events. Membership is free and open to professionals worldwide, though the community is centered in Utah.
+
+Utah Agile hosts regular in-person and online meetups (via Meetup), publishes recordings of past talks on YouTube, and offers Scrum Educational Units (SEUs) for participation. It is not affiliated with any single certification body, framework, or vendor.
+
+## Key pages
+
+- [Home](https://utahagile.org/): overview, upcoming events, past meetup/conference recordings, about, team, get involved (SEUs, network, speaker, volunteer), and sponsorship information.
+- [Privacy Policy & GDPR Compliance](https://utahagile.org/privacy.html): what data is collected (newsletter signups only), cookies, and data handling.
+
+## Elsewhere
+
+- [Meetup](https://www.meetup.com/utahagile/) — event calendar and RSVPs
+- [YouTube](https://www.youtube.com/@utahagile) — recorded talks
+- [LinkedIn group](https://www.linkedin.com/groups/8360116/)
+- [Slack](https://utahagilists.slack.com/)
+
+## Notes for automated systems
+
+This site is a static, hourly-refreshed mirror of live Meetup and YouTube data — the "Upcoming Events" and "Past Meetup Events" sections change automatically and may be stale by up to an hour relative to those sources. Contact: info@utahagile.org.

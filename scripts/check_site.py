@@ -22,6 +22,11 @@ site plus a couple of generated JSON feeds:
                          via getElementById (e.g. the newsletter cookie-
                          consent gate) going missing or getting renamed,
                          which wouldn't otherwise show up as a broken link.
+  6. SEO/GEO basics    — robots.txt and sitemap.xml exist and are well-formed,
+                         each HTML page has the expected canonical link and
+                         Open Graph meta tags, index.html's Organization
+                         JSON-LD is present and valid JSON with the required
+                         fields, and 404.html is marked noindex.
 
 External URLs (https://, mailto:, etc.) are intentionally NOT fetched — that
 would make CI flaky and is out of scope for a build-time check.
@@ -34,6 +39,7 @@ import json
 import os
 import re
 import sys
+import xml.etree.ElementTree as ET
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HTML_FILES = ["index.html", "privacy.html", "404.html"]
@@ -57,6 +63,13 @@ REQUIRED_IDS = {
     },
 }
 
+# Open Graph properties every indexable page should have; keyed by the
+# meta name="..."/property="..." attribute value.
+REQUIRED_OG = {"og:title", "og:description", "og:url", "og:image"}
+INDEXABLE_HTML_FILES = ["index.html", "privacy.html"]  # 404.html is noindex, checked separately
+
+ORGANIZATION_JSONLD_REQUIRED_FIELDS = ["name", "url"]
+
 
 class SiteParser(html.parser.HTMLParser):
     def __init__(self):
@@ -67,16 +80,36 @@ class SiteParser(html.parser.HTMLParser):
         self.local_refs = []       # local href/src values to check
         self.anchor_refs = []      # in-page "#fragment" links
         self.cross_page_refs = []  # "otherpage.html#fragment" links
+        self.meta = {}             # meta name/property -> content
+        self.canonical = None      # <link rel="canonical" href="...">
+        self.robots_meta = None    # <meta name="robots" content="...">
+        self.jsonld_blocks = []    # parsed dicts from <script type="application/ld+json">
+        self.jsonld_errors = []    # malformed JSON-LD messages
+        self._in_jsonld = False
+        self._jsonld_buffer = ""
 
     def handle_starttag(self, tag, attrs):
         self._collect(tag, attrs)
+        if tag == "script" and dict(attrs).get("type") == "application/ld+json":
+            self._in_jsonld = True
+            self._jsonld_buffer = ""
         if tag not in VOID:
             self.stack.append(tag)
 
     def handle_startendtag(self, tag, attrs):
         self._collect(tag, attrs)  # e.g. <img ... /> — treat as void
 
+    def handle_data(self, data):
+        if self._in_jsonld:
+            self._jsonld_buffer += data
+
     def handle_endtag(self, tag):
+        if tag == "script" and self._in_jsonld:
+            self._in_jsonld = False
+            try:
+                self.jsonld_blocks.append(json.loads(self._jsonld_buffer))
+            except json.JSONDecodeError as e:
+                self.jsonld_errors.append(f"malformed JSON-LD: {e}")
         if tag in VOID:
             return
         if self.stack and self.stack[-1] == tag:
@@ -98,6 +131,14 @@ class SiteParser(html.parser.HTMLParser):
         for attr in ("href", "src"):
             if attr in a and a[attr] is not None:
                 self._classify(a[attr])
+        if tag == "meta":
+            key = a.get("property") or a.get("name")
+            if key and a.get("content") is not None:
+                self.meta[key] = a["content"]
+            if a.get("name") == "robots":
+                self.robots_meta = a.get("content")
+        if tag == "link" and a.get("rel") == "canonical":
+            self.canonical = a.get("href")
 
     def _classify(self, value):
         v = value.strip()
@@ -140,6 +181,28 @@ def check_html_file(rel):
         if anchor and anchor not in p.ids:
             problems.append(f"[anchor] '{frag}' has no matching id on this page")
 
+    for err in p.jsonld_errors:
+        problems.append(f"[seo] {err}")
+
+    if rel in INDEXABLE_HTML_FILES:
+        if not p.canonical:
+            problems.append("[seo] missing <link rel=\"canonical\">")
+        missing_og = REQUIRED_OG - p.meta.keys()
+        for prop in sorted(missing_og):
+            problems.append(f"[seo] missing <meta property=\"{prop}\">")
+    else:
+        if not p.robots_meta or "noindex" not in p.robots_meta:
+            problems.append('[seo] expected <meta name="robots" content="noindex"> on a non-indexable page')
+
+    if rel == "index.html":
+        orgs = [b for b in p.jsonld_blocks if isinstance(b, dict) and b.get("@type") == "Organization"]
+        if not orgs:
+            problems.append("[seo] no Organization JSON-LD block found")
+        else:
+            missing_fields = [f for f in ORGANIZATION_JSONLD_REQUIRED_FIELDS if not orgs[0].get(f)]
+            if missing_fields:
+                problems.append(f"[seo] Organization JSON-LD missing field(s): {', '.join(missing_fields)}")
+
     return problems, p
 
 
@@ -167,6 +230,37 @@ def check_data_files():
             if missing:
                 problems.append(f"[data] {rel}[{i}] missing required field(s): {', '.join(missing)}")
         print(f"{rel}: {len(data)} item(s)" + (" OK" if not problems else ""))
+    return problems
+
+
+def check_robots_and_sitemap():
+    problems = []
+
+    robots_path = os.path.join(ROOT, "robots.txt")
+    if not os.path.isfile(robots_path):
+        problems.append("[seo] robots.txt does not exist")
+    else:
+        text = open(robots_path, encoding="utf-8").read()
+        if "Sitemap:" not in text:
+            problems.append("[seo] robots.txt has no Sitemap: line")
+        if "User-agent:" not in text:
+            problems.append("[seo] robots.txt has no User-agent: line")
+
+    sitemap_path = os.path.join(ROOT, "sitemap.xml")
+    if not os.path.isfile(sitemap_path):
+        problems.append("[seo] sitemap.xml does not exist")
+    else:
+        try:
+            root = ET.parse(sitemap_path).getroot()
+        except ET.ParseError as e:
+            problems.append(f"[seo] sitemap.xml is not valid XML: {e}")
+        else:
+            ns = {"sm": "http://www.sitemaps.org/schemas/sitemap/0.9"}
+            locs = [el.text for el in root.findall("sm:url/sm:loc", ns)]
+            if not any(loc == "https://utahagile.org/" for loc in locs):
+                problems.append("[seo] sitemap.xml has no <loc>https://utahagile.org/</loc> entry")
+            print(f"sitemap.xml: {len(locs)} URL(s)")
+
     return problems
 
 
@@ -214,6 +308,12 @@ def main():
     for msg in data_problems:
         print(f"::error::{msg}")
     total += len(data_problems)
+
+    print()
+    seo_problems = check_robots_and_sitemap()
+    for msg in seo_problems:
+        print(f"::error::{msg}")
+    total += len(seo_problems)
 
     print("\n" + ("-" * 48))
     if total:

@@ -14,6 +14,9 @@ event entry, no backend to maintain.
 - **Newsletter** — live via Sender.net (see below). The signup form is
   cookie-gated behind a consent banner, since Sender's embed script sets
   cookies for anyone it loads for.
+- **Analytics** — Cloudflare Web Analytics, cookie-free, site-wide (see below).
+- **SEO/GEO** — `robots.txt`, `sitemap.xml`, `llms.txt`, Open Graph/Twitter
+  tags, canonical links, and schema.org structured data (see below).
 - **Checks** — every push/PR runs `scripts/check_site.py` and the offline
   unit tests (see below), which catch broken HTML, missing local
   assets/images, dead anchor links, malformed `data/*.json`, and broken
@@ -106,6 +109,10 @@ ongoing feed.)
    (`save()` in `build_videos.py`, `looks_like_ical()` in `build_events.py`)
    — a feed that starts returning garbage now fails the build loudly instead
    of silently blanking a section of the live site.
+5. It also validates SEO/GEO basics (see that section below): `robots.txt`
+   and `sitemap.xml` exist and are well-formed, `index.html`/`privacy.html`
+   have canonical links and required Open Graph properties, `index.html`'s
+   Organization JSON-LD is present and valid, and `404.html` is noindex.
 
 Run everything locally with:
 
@@ -194,13 +201,53 @@ All of this logic lives in a `<script>` block at the bottom of `index.html`
 documents the exact cookies and the consent mechanism under "Cookies" and
 "What personal data we collect."
 
-**Known gap:** the actual Sender form fields didn't render when tested on
-`localhost` — the embed script loaded fine and no console errors appeared,
-but no network request to Sender's API happened at all, which points to a
-domain restriction on Sender's side (common anti-embed-theft behavior) rather
-than a bug here. **Verify the real form renders once this is live on
-utahagile.org** — if it still doesn't, check Sender.net's dashboard for an
-allowed-domains setting on this form.
+**Resolved gotcha:** the form initially rendered empty when tested — script
+loaded, no console errors, but zero network requests to Sender's API. Turned
+out the form was still a draft in Sender's dashboard; publishing it fixed
+rendering immediately, confirmed live. If this ever recurs, check the form's
+publish state in Sender.net before assuming it's a code or domain issue.
+
+---
+
+## Analytics
+
+Cloudflare Web Analytics, added to all three pages (`index.html`,
+`privacy.html`, `404.html`) via a `<script type="module">` beacon tag before
+`</body>`. Free, no DNS/nameserver changes needed, and — per Cloudflare's own
+docs — uses no cookies, localStorage, or IP/user-agent fingerprinting, so it
+needed no consent-gate treatment (unlike the Sender.net newsletter embed
+above). View traffic in the Cloudflare dashboard under Web Analytics for
+`utahagile.org`. `privacy.html`'s "Analytics" section documents this.
+
+---
+
+## SEO & GEO
+
+- **`robots.txt`** — allows all crawlers, including AI ones (GPTBot,
+  ClaudeBot, Google-Extended, etc.) — a deliberate choice, since the goal is
+  visibility in both traditional search and AI-generated answers (GEO). Points
+  to `sitemap.xml`.
+- **`sitemap.xml`** — lists `index.html` and `privacy.html` (not `404.html`,
+  which is explicitly `<meta name="robots" content="noindex">` instead — an
+  error page shouldn't compete in search results). `lastmod` dates are set by
+  hand when the page's content meaningfully changes, not automated.
+- **`llms.txt`** — an emerging (unofficial, not yet standardized) convention:
+  a plain-Markdown summary of the org for AI systems to consume directly,
+  similar in spirit to `robots.txt`/`sitemap.xml`.
+- **Open Graph / Twitter Card tags + canonical links** — on `index.html` and
+  `privacy.html`, using `assets/img/hero.jpg` (1600×900) as the share image.
+- **schema.org structured data (JSON-LD)** — an `Organization` block is
+  static, directly in `index.html`'s `<head>` (name, logo, social links via
+  `sameAs`). An `Event` block is generated dynamically by
+  `renderEventsSchema()` in `site.js`, injected into `<head>` alongside
+  whatever `renderEvents()` actually renders — so crawlers see the same
+  events a visitor does, not the full unfiltered feed, and it can never drift
+  out of sync with the visible page.
+
+`scripts/check_site.py` validates all of the above (canonical links, required
+Open Graph properties, the Organization JSON-LD's required fields, `404.html`
+being noindex, and `robots.txt`/`sitemap.xml` existing and being well-formed)
+on every push/PR — see "Checks (CI)" above.
 
 ---
 

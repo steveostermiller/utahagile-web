@@ -1,9 +1,12 @@
 /* Utah Agile — shared site behavior.
    Renders events from data/events.json wherever a [data-events] element
    exists, and past-meetup videos from data/videos.json wherever a
-   [data-videos] element exists. Header/footer are static markup directly in
-   each page now that the site is a single page (index.html) plus
-   privacy.html. */
+   [data-videos] element exists. Also injects a schema.org Event JSON-LD
+   block matching whatever events actually render (see renderEventsSchema),
+   for SEO/GEO — the static Organization JSON-LD lives directly in
+   index.html's <head> instead, since it doesn't change at runtime. Header/
+   footer are static markup directly in each page now that the site is a
+   single page (index.html) plus privacy.html. */
 
 const MEETUP_URL = "https://www.meetup.com/utahagile/";
 
@@ -33,6 +36,35 @@ function formatEvent(ev) {
     </article>`;
 }
 
+function eventToSchema(ev) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    name: ev.title,
+    startDate: ev.start,
+    endDate: ev.end,
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    eventStatus: "https://schema.org/EventScheduled",
+    location: ev.location ? { "@type": "Place", name: ev.location } : undefined,
+    image: ev.thumbnail,
+    url: ev.url,
+    organizer: { "@type": "Organization", name: "Utah Agile", url: "https://utahagile.org/" },
+  };
+}
+
+// Reflects whatever the [data-events] container actually renders, so search/AI
+// crawlers see the same events a visitor does — not the full unfiltered feed.
+function renderEventsSchema(list) {
+  let tag = document.getElementById("events-jsonld");
+  if (!tag) {
+    tag = document.createElement("script");
+    tag.type = "application/ld+json";
+    tag.id = "events-jsonld";
+    document.head.appendChild(tag);
+  }
+  tag.textContent = JSON.stringify(list.map(eventToSchema));
+}
+
 async function renderEvents() {
   const containers = document.querySelectorAll("[data-events]");
   if (!containers.length) return;
@@ -55,6 +87,7 @@ async function renderEvents() {
       ? list.map(formatEvent).join("")
       : `<p class="events-empty">No upcoming events scheduled right now &mdash;
          check our <a href="${MEETUP_URL}">Meetup page</a> or subscribe below.</p>`;
+    renderEventsSchema(list);
   });
 }
 
