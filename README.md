@@ -124,10 +124,20 @@ the empty-feed guard meant the site was never actually affected either time.
    (`save()` in `build_videos.py`, `looks_like_ical()` in `build_events.py`)
    — a feed that starts returning garbage now fails the build loudly instead
    of silently blanking a section of the live site.
-5. It also validates SEO/GEO basics (see that section below): `robots.txt`
-   and `sitemap.xml` exist and are well-formed, `index.html`/`privacy.html`
-   have canonical links and required Open Graph properties, `index.html`'s
-   Organization JSON-LD is present and valid, and `404.html` is noindex.
+5. It also validates SEO/GEO basics (see that section below): `robots.txt`,
+   `sitemap.xml`, and `llms.txt` exist (the first two well-formed, the third
+   non-empty), `index.html`/`privacy.html` have canonical links and required
+   Open Graph + Twitter Card properties, `index.html`'s Organization JSON-LD
+   is present and valid, and `404.html` is noindex.
+6. It also checks the Cloudflare Web Analytics beacon script is present on
+   all three HTML pages, and that `site.js` still defines the
+   `eventToSchema`/`renderEventsSchema` functions the dynamic Event JSON-LD
+   depends on. Both are presence checks, not behavior tests — there's no JS
+   test runner in this project (everything else here is Python stdlib only),
+   so this catches the functions/script tag being deleted outright, not a
+   logic bug inside them. Verified by deliberately breaking each of these 4
+   things (and the SEO items above) in a scratch copy and confirming
+   `check_site.py` actually fails — not just that it passes cleanly normally.
 
 Run everything locally with:
 

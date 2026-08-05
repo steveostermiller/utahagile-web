@@ -23,10 +23,16 @@ site plus a couple of generated JSON feeds:
                          consent gate) going missing or getting renamed,
                          which wouldn't otherwise show up as a broken link.
   6. SEO/GEO basics    — robots.txt and sitemap.xml exist and are well-formed,
-                         each HTML page has the expected canonical link and
-                         Open Graph meta tags, index.html's Organization
+                         llms.txt exists and isn't empty, each indexable HTML
+                         page has the expected canonical link and Open Graph
+                         + Twitter Card meta tags, index.html's Organization
                          JSON-LD is present and valid JSON with the required
                          fields, and 404.html is marked noindex.
+  7. Analytics         — the Cloudflare Web Analytics beacon script is
+                         present on every HTML page, and site.js still
+                         defines the functions that generate the dynamic
+                         Event JSON-LD (a presence check, not a behavior
+                         test — there's no JS test runner in this project).
 
 External URLs (https://, mailto:, etc.) are intentionally NOT fetched — that
 would make CI flaky and is out of scope for a build-time check.
@@ -63,12 +69,20 @@ REQUIRED_IDS = {
     },
 }
 
-# Open Graph properties every indexable page should have; keyed by the
-# meta name="..."/property="..." attribute value.
+# Open Graph / Twitter Card properties every indexable page should have;
+# keyed by the meta name="..."/property="..." attribute value.
 REQUIRED_OG = {"og:title", "og:description", "og:url", "og:image"}
+REQUIRED_TWITTER = {"twitter:card", "twitter:title", "twitter:description", "twitter:image"}
 INDEXABLE_HTML_FILES = ["index.html", "privacy.html"]  # 404.html is noindex, checked separately
 
 ORGANIZATION_JSONLD_REQUIRED_FIELDS = ["name", "url"]
+
+# A regression tripwire, not a behavior test: confirms these functions are
+# still present in site.js so a future edit can't silently delete the
+# dynamic Event JSON-LD generation. Can't verify runtime correctness here —
+# there's no JS test runner in this zero-dependency, Python-only project —
+# so this only catches the function being removed outright, not a logic bug.
+REQUIRED_JS_FUNCTIONS = {"assets/js/site.js": ["eventToSchema", "renderEventsSchema"]}
 
 
 class SiteParser(html.parser.HTMLParser):
@@ -190,9 +204,15 @@ def check_html_file(rel):
         missing_og = REQUIRED_OG - p.meta.keys()
         for prop in sorted(missing_og):
             problems.append(f"[seo] missing <meta property=\"{prop}\">")
+        missing_twitter = REQUIRED_TWITTER - p.meta.keys()
+        for prop in sorted(missing_twitter):
+            problems.append(f"[seo] missing <meta name=\"{prop}\">")
     else:
         if not p.robots_meta or "noindex" not in p.robots_meta:
             problems.append('[seo] expected <meta name="robots" content="noindex"> on a non-indexable page')
+
+    if "cloudflareinsights.com" not in source:
+        problems.append("[analytics] Cloudflare Web Analytics beacon script not found on this page")
 
     if rel == "index.html":
         orgs = [b for b in p.jsonld_blocks if isinstance(b, dict) and b.get("@type") == "Organization"]
@@ -260,6 +280,23 @@ def check_robots_and_sitemap():
             if not any(loc == "https://utahagile.org/" for loc in locs):
                 problems.append("[seo] sitemap.xml has no <loc>https://utahagile.org/</loc> entry")
             print(f"sitemap.xml: {len(locs)} URL(s)")
+
+    llms_path = os.path.join(ROOT, "llms.txt")
+    if not os.path.isfile(llms_path):
+        problems.append("[seo] llms.txt does not exist")
+    elif not open(llms_path, encoding="utf-8").read().strip():
+        problems.append("[seo] llms.txt is empty")
+
+    for rel, functions in REQUIRED_JS_FUNCTIONS.items():
+        path = os.path.join(ROOT, rel)
+        if not os.path.isfile(path):
+            problems.append(f"[analytics] {rel} does not exist")
+            continue
+        text = open(path, encoding="utf-8").read()
+        for fn in functions:
+            if f"function {fn}(" not in text:
+                problems.append(f"[seo] {rel} no longer defines {fn}() — "
+                                 "dynamic Event JSON-LD generation may be broken")
 
     return problems
 
