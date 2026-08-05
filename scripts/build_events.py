@@ -20,6 +20,7 @@ In CI:         invoked on a schedule by .github/workflows/update-events.yml
 import json
 import re
 import sys
+import time
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
@@ -27,12 +28,30 @@ from pathlib import Path
 ICAL_URL = "https://www.meetup.com/utahagile/events/ical/"
 OUT_PATH = Path(__file__).resolve().parent.parent / "data" / "events.json"
 ENRICH_LIMIT = 10  # cap how many event pages we fetch per run
+RETRY_ATTEMPTS = 3
+RETRY_DELAY = 5  # seconds
 
 
 def fetch_ical(url: str) -> str:
     req = urllib.request.Request(url, headers={"User-Agent": "utahagile-web/1.0"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.read().decode("utf-8", errors="replace")
+
+
+def fetch_with_retry(fetch_fn, attempts=RETRY_ATTEMPTS, delay=RETRY_DELAY):
+    """Retry a flaky network call before giving up — see build_videos.py's
+    copy of this for the production incident that motivated it. Only used
+    for the main iCal fetch, not per-event enrichment (enrich_event already
+    fails soft and shouldn't slow down a whole run retrying each event)."""
+    for attempt in range(1, attempts + 1):
+        try:
+            return fetch_fn()
+        except Exception as e:
+            if attempt == attempts:
+                raise
+            print(f"WARNING: fetch attempt {attempt}/{attempts} failed ({e}); "
+                  f"retrying in {delay}s", file=sys.stderr)
+            time.sleep(delay)
 
 
 def unfold(text: str) -> str:
@@ -160,7 +179,7 @@ def enrich_event(ev: dict) -> dict:
 
 def main() -> int:
     try:
-        ical = fetch_ical(ICAL_URL)
+        ical = fetch_with_retry(lambda: fetch_ical(ICAL_URL))
     except Exception as e:  # network hiccup shouldn't wipe a good file
         print(f"ERROR fetching iCal: {e}", file=sys.stderr)
         return 1

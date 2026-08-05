@@ -15,6 +15,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 import build_videos  # noqa: E402
@@ -89,6 +90,37 @@ class SaveGuardTests(unittest.TestCase):
             ok = build_videos.save(videos, out_path)
             self.assertTrue(ok)
             self.assertEqual(len(json.loads(out_path.read_text())), build_videos.LIMIT)
+
+
+class FetchWithRetryTests(unittest.TestCase):
+    def test_succeeds_immediately_without_sleeping(self):
+        with patch("build_videos.time.sleep") as mock_sleep:
+            result = build_videos.fetch_with_retry(lambda: "ok")
+        self.assertEqual(result, "ok")
+        mock_sleep.assert_not_called()
+
+    def test_succeeds_after_transient_failures_within_budget(self):
+        calls = {"n": 0}
+
+        def flaky():
+            calls["n"] += 1
+            if calls["n"] < 3:
+                raise OSError("transient blip")
+            return "ok"
+
+        with patch("build_videos.time.sleep") as mock_sleep:
+            result = build_videos.fetch_with_retry(flaky, attempts=3, delay=5)
+        self.assertEqual(result, "ok")
+        self.assertEqual(calls["n"], 3)
+        self.assertEqual(mock_sleep.call_count, 2)  # slept between attempts 1->2 and 2->3
+
+    def test_raises_after_exhausting_all_attempts(self):
+        def always_fails():
+            raise OSError("persistent failure")
+
+        with patch("build_videos.time.sleep"):
+            with self.assertRaises(OSError):
+                build_videos.fetch_with_retry(always_fails, attempts=3, delay=5)
 
 
 if __name__ == "__main__":

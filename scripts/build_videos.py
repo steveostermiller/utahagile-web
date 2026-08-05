@@ -10,6 +10,7 @@ In CI:         invoked on a schedule by .github/workflows/update-videos.yml
 
 import json
 import sys
+import time
 import urllib.request
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -18,6 +19,8 @@ CHANNEL_ID = "UCXn0hT3Kcd0kHqpHdxrf0Ng"  # Utah Agile
 FEED_URL = f"https://www.youtube.com/feeds/videos.xml?channel_id={CHANNEL_ID}"
 OUT_PATH = Path(__file__).resolve().parent.parent / "data" / "videos.json"
 LIMIT = 2
+RETRY_ATTEMPTS = 3
+RETRY_DELAY = 5  # seconds
 
 NS = {
     "atom": "http://www.w3.org/2005/Atom",
@@ -30,6 +33,23 @@ def fetch_feed(url: str) -> bytes:
     req = urllib.request.Request(url, headers={"User-Agent": "utahagile-web/1.0"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         return resp.read()
+
+
+def fetch_with_retry(fetch_fn, attempts=RETRY_ATTEMPTS, delay=RETRY_DELAY):
+    """Retry a flaky network call before giving up. Smooths over the kind of
+    one-off transient blip that's actually happened in production (two
+    hourly runs failed the same way, but the very next run succeeded fine)
+    without masking a real, persistent failure — the last exception still
+    propagates once all attempts are exhausted."""
+    for attempt in range(1, attempts + 1):
+        try:
+            return fetch_fn()
+        except Exception as e:
+            if attempt == attempts:
+                raise
+            print(f"WARNING: fetch attempt {attempt}/{attempts} failed ({e}); "
+                  f"retrying in {delay}s", file=sys.stderr)
+            time.sleep(delay)
 
 
 def parse_videos(xml_bytes: bytes) -> list:
@@ -67,7 +87,7 @@ def save(videos: list, out_path: Path) -> bool:
 
 def main() -> int:
     try:
-        xml_bytes = fetch_feed(FEED_URL)
+        xml_bytes = fetch_with_retry(lambda: fetch_feed(FEED_URL))
     except Exception as e:  # network hiccup shouldn't wipe a good file
         print(f"ERROR fetching YouTube feed: {e}", file=sys.stderr)
         return 1

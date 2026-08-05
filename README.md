@@ -67,6 +67,16 @@ iCal field to fill in (Meetup's iCal feed doesn't carry either one at all,
 confirmed by inspecting the raw feed directly, which is why this reads the
 event page instead).
 
+**Retry on transient network failures:** the main iCal fetch retries up to 3
+times (5s apart) via `fetch_with_retry()` before giving up. Added 2026-08-05
+after two hourly runs failed the same way on consecutive nights but the very
+next run each time succeeded fine — the empty-feed guard above meant the site
+was never actually affected, but the retry cuts down on false-alarm failure
+emails from one-off blips. Per-event enrichment fetches are *not* retried —
+`enrich_event()` already fails soft (skips just that event's location/photo
+rather than the whole run), so retrying there would only slow things down
+without preventing any user-visible failure.
+
 ---
 
 ## How past-meetup videos work
@@ -83,6 +93,11 @@ event page instead).
 YouTube. (The "Past Conference Events" videos below it are still hand-picked
 Vimeo embeds in `index.html`, since those are a fixed historical set, not an
 ongoing feed.)
+
+Same retry-on-transient-failure behavior as events above (3 attempts, 5s
+apart, via `fetch_with_retry()`) — added for the same reason: two hourly
+runs failed this way on consecutive nights, self-healed the next run, and
+the empty-feed guard meant the site was never actually affected either time.
 
 ---
 
