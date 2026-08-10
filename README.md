@@ -108,8 +108,10 @@ the empty-feed guard meant the site was never actually affected either time.
    flaky.
 2. It validates `index.html`, `privacy.html`, and `404.html` for: unclosed/stray
    HTML tags, local `href`/`src` references that point at a missing file, and
-   anchor links (`#section` and cross-page `index.html#section`, the pattern
-   `privacy.html`/`404.html` use) that don't resolve to a real `id`.
+   anchor links (`#section` and root-relative `/#section`, the pattern
+   `privacy.html`/`404.html` use to link back to the homepage — see "Why
+   `/#section` not `index.html#section`" below) that don't resolve to a real
+   `id`.
 3. It also validates `data/events.json` and `data/videos.json` are present,
    valid JSON, a list, and that every item has its required fields — this is
    what would catch Meetup or YouTube silently changing their feed format and
@@ -273,6 +275,22 @@ above). View traffic in the Cloudflare dashboard under Web Analytics for
 Open Graph properties, the Organization JSON-LD's required fields, `404.html`
 being noindex, and `robots.txt`/`sitemap.xml` existing and being well-formed)
 on every push/PR — see "Checks (CI)" above.
+
+### Why `/#section` not `index.html#section`
+
+`privacy.html`/`404.html` link back to homepage sections using root-relative
+paths (`/#events`, not `index.html#events`). This isn't just style — GitHub
+Pages serves the same file at both `https://utahagile.org/` and
+`https://utahagile.org/index.html`, and both correctly declare `/` as their
+canonical URL. But every internal link across the site pointing at
+`index.html` instead of `/` was a real, measured cause of a Google Search
+Console "Duplicate, Google chose different canonical than user" error
+(2026-08-08) — Google's own guidance says conflicting internal-link signals
+can override a declared canonical, and 21 links across two pages all pointing
+at the non-canonical URL was exactly that. Don't reintroduce `index.html#...`
+links when editing `privacy.html`/`404.html`'s nav — `check_site.py` treats
+`/#section` as a cross-page reference to `index.html`'s ids, same validation
+as before, just without creating the bad signal.
 
 ---
 

@@ -11,9 +11,14 @@ site plus a couple of generated JSON feeds:
   2. Broken assets     — a local href/src (css, js, image, favicon) that
                          points at a file that isn't in the repo.
   3. Broken anchors    — an in-page href="#id" with no matching element id,
-                         or a cross-page href="index.html#id" (the pattern
-                         privacy.html/404.html use to link back to a section)
-                         with no matching id on index.html.
+                         or a root-relative href="/#id" (the pattern
+                         privacy.html/404.html use to link back to a section
+                         on the homepage — deliberately not "index.html#id",
+                         which caused a real Search Console "duplicate,
+                         different canonical" issue by creating an internal-
+                         link signal favoring the non-canonical /index.html
+                         URL over the declared canonical "/") with no
+                         matching id on index.html.
   4. Bad data files    — data/events.json / data/videos.json that are missing,
                          not valid JSON, not a list, or whose items are
                          missing required keys (catches the Meetup/YouTube
@@ -161,6 +166,16 @@ class SiteParser(html.parser.HTMLParser):
         m = re.match(r"^([\w./-]+\.html)#(.+)$", v)
         if v.startswith("#"):
             self.anchor_refs.append(v)
+        elif v == "/" or v.startswith("/#"):
+            # Root-relative link to the homepage (index.html serves "/" on
+            # the live custom domain) — privacy.html/404.html use this form
+            # deliberately instead of "index.html#..." so they don't create
+            # an internal-link signal favoring the non-canonical
+            # /index.html URL (this caused a real Search Console "duplicate,
+            # different canonical" issue — see git history).
+            anchor = v[2:]
+            if anchor:
+                self.cross_page_refs.append(("index.html", anchor))
         elif m:
             self.cross_page_refs.append((m.group(1), m.group(2)))
         elif re.match(r"^(https?:|mailto:|tel:|data:|//)", v):
