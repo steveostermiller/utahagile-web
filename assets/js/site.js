@@ -37,19 +37,39 @@ function formatEvent(ev) {
 }
 
 function eventToSchema(ev) {
-  return {
+  const schema = {
     "@context": "https://schema.org",
     "@type": "Event",
     name: ev.title,
+    description: ev.description,
     startDate: ev.start,
     endDate: ev.end,
-    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    // Passed through directly from Meetup's own schema.org data (see
+    // build_events.py's enrich_event) rather than guessed here — a virtual
+    // event with no venue_name/venue_address defaulting to "offline with no
+    // location" is exactly what made Google Search Console flag it as
+    // invalid for rich results in the first place.
+    eventAttendanceMode: ev.attendance_mode || "https://schema.org/OfflineEventAttendanceMode",
     eventStatus: "https://schema.org/EventScheduled",
-    location: ev.location ? { "@type": "Place", name: ev.location } : undefined,
     image: ev.thumbnail,
     url: ev.url,
     organizer: { "@type": "Organization", name: "Utah Agile", url: "https://utahagile.org/" },
+    // All Utah Agile events are free.
+    offers: {
+      "@type": "Offer", price: "0", priceCurrency: "USD",
+      url: ev.url, availability: "https://schema.org/InStock",
+    },
   };
+  if (ev.virtual_url) {
+    schema.location = { "@type": "VirtualLocation", url: ev.virtual_url };
+  } else if (ev.venue_name) {
+    schema.location = {
+      "@type": "Place",
+      name: ev.venue_name,
+      address: ev.venue_address ? { "@type": "PostalAddress", streetAddress: ev.venue_address } : undefined,
+    };
+  }
+  return schema;
 }
 
 // Reflects whatever the [data-events] container actually renders, so search/AI

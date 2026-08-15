@@ -4,14 +4,18 @@ Fetch upcoming events from the Utah Agile Meetup iCal feed and write them to
 data/events.json. Zero third-party dependencies (stdlib only) so it runs
 anywhere, including a stock GitHub Actions runner.
 
-Meetup's iCal feed does not carry a venue or event photo, even when both are
-public on the event page — confirmed by inspecting the raw feed and the
-page's own structured data. So each event is additionally (best-effort)
-enriched by fetching its own Meetup page and reading the schema.org Event
-JSON-LD block embedded there, which does include a location and image(s).
-This enrichment step is optional per event: if the fetch fails or Meetup
-changes that markup, the event still ships with its reliable iCal fields
-(title/date/RSVP link) — it just won't have a location or thumbnail.
+Meetup's iCal feed does not carry a venue, online-meeting link, attendance
+mode, or event photo, even when all are public on the event page — confirmed
+by inspecting the raw feed and the page's own structured data. So each event
+is additionally (best-effort) enriched by fetching its own Meetup page and
+reading the schema.org Event JSON-LD block embedded there, which does
+include all of that — including, correctly, eventAttendanceMode and a
+VirtualLocation (not a Place) for online events. This enrichment step is
+optional per event: if the fetch fails or Meetup changes that markup, the
+event still ships with its reliable iCal fields (title/date/RSVP link) — it
+just won't have a location/attendance-mode/thumbnail, which is also why the
+site's dynamic Event JSON-LD (site.js) defaults to offline/no-location
+rather than asserting something we don't actually know.
 
 Run locally:   python3 scripts/build_events.py
 In CI:         invoked on a schedule by .github/workflows/update-events.yml
@@ -136,13 +140,24 @@ def extract_event_schema(html: str):
 
 
 def location_from_schema(event_schema: dict):
+    """Return a dict describing the event's location, preserving structure
+    instead of collapsing it into a display string — schema.org's Event
+    needs a proper nested Place/address or VirtualLocation, and Meetup
+    already tells us plainly which kind an event is via its @type (and
+    provides eventAttendanceMode alongside it). Returns None if Meetup
+    didn't provide a location at all."""
     place = event_schema.get("location")
     if not isinstance(place, dict):
         return None
-    address = place.get("address")
-    street = address.get("streetAddress") if isinstance(address, dict) else None
-    parts = [p for p in (place.get("name"), street) if p]
-    return " · ".join(parts) if parts else None
+    if place.get("@type") == "VirtualLocation":
+        url = place.get("url")
+        return {"type": "virtual", "url": url} if url else None
+    if place.get("@type") == "Place":
+        address = place.get("address")
+        street = address.get("streetAddress") if isinstance(address, dict) else None
+        name = place.get("name")
+        return {"type": "physical", "name": name, "street": street} if (name or street) else None
+    return None
 
 
 def thumbnail_from_schema(event_schema: dict):
@@ -155,10 +170,22 @@ def thumbnail_from_schema(event_schema: dict):
 
 
 def enrich_event(ev: dict) -> dict:
-    """Best-effort: fetch the event's own Meetup page and merge in a venue
-    and thumbnail image from its embedded schema.org data — fields the iCal
-    feed doesn't carry. Never raises; on any failure ev is returned
-    unchanged, so title/date/RSVP still work even if this fails."""
+    """Best-effort: fetch the event's own Meetup page and merge in venue/
+    online-location info, attendance mode, and a thumbnail image from its
+    embedded schema.org data — fields the iCal feed doesn't carry. Never
+    raises; on any failure ev is returned unchanged, so title/date/RSVP
+    still work even if this fails.
+
+    Stores both a human-readable `location` string (for the visible page —
+    "Venue · Street address" or "Virtual") and the raw structured pieces
+    (`venue_name`/`venue_address` or `virtual_url`, plus `attendance_mode`
+    passed through directly from Meetup) so the site's dynamic Event JSON-LD
+    can build a real nested schema.org Place/address or VirtualLocation
+    instead of stuffing everything into a Place "name" string — the latter
+    is what caused Google Search Console to flag events as invalid for rich
+    results (missing "location" entirely for virtual events, since they
+    have no Place at all) and as missing an "address" sub-field for
+    physical ones."""
     url = ev.get("url")
     if not url:
         return ev
@@ -166,9 +193,23 @@ def enrich_event(ev: dict) -> dict:
         schema = extract_event_schema(fetch_event_page(url))
         if not schema:
             return ev
+
+        attendance_mode = schema.get("eventAttendanceMode")
+        if attendance_mode:
+            ev["attendance_mode"] = attendance_mode
+
         location = location_from_schema(schema)
-        if location:
-            ev["location"] = location
+        if location and location["type"] == "physical":
+            if location.get("name"):
+                ev["venue_name"] = location["name"]
+            if location.get("street"):
+                ev["venue_address"] = location["street"]
+            ev["location"] = " · ".join(
+                p for p in (location.get("name"), location.get("street")) if p)
+        elif location and location["type"] == "virtual":
+            ev["virtual_url"] = location["url"]
+            ev["location"] = "Virtual"
+
         thumbnail = thumbnail_from_schema(schema)
         if thumbnail:
             ev["thumbnail"] = thumbnail

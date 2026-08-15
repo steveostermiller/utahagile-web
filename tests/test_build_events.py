@@ -40,10 +40,23 @@ NOT_ICAL = "<html><body>Sorry, this feed has moved.</body></html>"
 EVENT_PAGE_HTML = """<html><head>
 <script type="application/ld+json">{"@type":"Organization","name":"Meetup"}</script>
 <script type="application/ld+json">{"@type":"Event","name":"End of Summer Networking",
+  "eventAttendanceMode":"https://schema.org/OfflineEventAttendanceMode",
   "image":["https://secure-content.meetupstatic.com/images/a/676x676.jpg",
            "https://secure-content.meetupstatic.com/images/a/676x380.jpg"],
   "location":{"@type":"Place","name":"Olympic Park",
               "address":{"@type":"PostalAddress","streetAddress":"2700 W Parkside Dr, Lehi, UT"}}}
+</script>
+</head><body></body></html>"""
+
+# Shaped like a real Meetup *virtual* event page (captured 2026-08-15,
+# "Agile Roundtable - Virtual") — location is a VirtualLocation with just a
+# url, not a Place. This is the shape that was missing entirely before,
+# which is what made Google Search Console flag these events as invalid for
+# rich results (no location at all, since the old code only handled Place).
+VIRTUAL_EVENT_PAGE_HTML = """<html><head>
+<script type="application/ld+json">{"@type":"Event","name":"Agile Roundtable - Virtual",
+  "eventAttendanceMode":"https://schema.org/OnlineEventAttendanceMode",
+  "location":{"@type":"VirtualLocation","url":"https://www.meetup.com/utahagile/events/315883751/"}}
 </script>
 </head><body></body></html>"""
 
@@ -103,16 +116,28 @@ class ExtractEventSchemaTests(unittest.TestCase):
 
 
 class LocationFromSchemaTests(unittest.TestCase):
-    def test_combines_venue_name_and_street_address(self):
+    def test_physical_place_returns_name_and_street_separately(self):
         schema = build_events.extract_event_schema(EVENT_PAGE_HTML)
-        self.assertEqual(build_events.location_from_schema(schema),
-                          "Olympic Park · 2700 W Parkside Dr, Lehi, UT")
+        self.assertEqual(build_events.location_from_schema(schema), {
+            "type": "physical", "name": "Olympic Park",
+            "street": "2700 W Parkside Dr, Lehi, UT",
+        })
+
+    def test_virtual_location_returns_url(self):
+        schema = build_events.extract_event_schema(VIRTUAL_EVENT_PAGE_HTML)
+        self.assertEqual(build_events.location_from_schema(schema), {
+            "type": "virtual", "url": "https://www.meetup.com/utahagile/events/315883751/",
+        })
 
     def test_none_when_location_missing(self):
         self.assertIsNone(build_events.location_from_schema({}))
 
-    def test_none_when_location_is_not_a_place(self):
+    def test_none_when_location_is_a_bare_string(self):
         self.assertIsNone(build_events.location_from_schema({"location": "online"}))
+
+    def test_none_when_virtual_location_missing_url(self):
+        self.assertIsNone(build_events.location_from_schema(
+            {"location": {"@type": "VirtualLocation"}}))
 
 
 class ThumbnailFromSchemaTests(unittest.TestCase):
@@ -130,12 +155,27 @@ class ThumbnailFromSchemaTests(unittest.TestCase):
 
 
 class EnrichEventTests(unittest.TestCase):
-    def test_merges_location_and_thumbnail_on_success(self):
+    def test_merges_physical_location_thumbnail_and_attendance_mode(self):
         ev = {"title": "End of Summer Networking", "url": "https://meetup.com/x/1"}
         with patch.object(build_events, "fetch_event_page", return_value=EVENT_PAGE_HTML):
             enriched = build_events.enrich_event(ev)
         self.assertEqual(enriched["location"], "Olympic Park · 2700 W Parkside Dr, Lehi, UT")
+        self.assertEqual(enriched["venue_name"], "Olympic Park")
+        self.assertEqual(enriched["venue_address"], "2700 W Parkside Dr, Lehi, UT")
+        self.assertEqual(enriched["attendance_mode"], "https://schema.org/OfflineEventAttendanceMode")
+        self.assertNotIn("virtual_url", enriched)
         self.assertTrue(enriched["thumbnail"].startswith("https://"))
+
+    def test_merges_virtual_location_and_attendance_mode(self):
+        ev = {"title": "Agile Roundtable - Virtual", "url": "https://meetup.com/x/4"}
+        with patch.object(build_events, "fetch_event_page", return_value=VIRTUAL_EVENT_PAGE_HTML):
+            enriched = build_events.enrich_event(ev)
+        self.assertEqual(enriched["location"], "Virtual")
+        self.assertEqual(enriched["virtual_url"],
+                          "https://www.meetup.com/utahagile/events/315883751/")
+        self.assertEqual(enriched["attendance_mode"], "https://schema.org/OnlineEventAttendanceMode")
+        self.assertNotIn("venue_name", enriched)
+        self.assertNotIn("venue_address", enriched)
 
     def test_leaves_event_unchanged_when_fetch_fails(self):
         ev = {"title": "Sprint Planning", "url": "https://meetup.com/x/2"}

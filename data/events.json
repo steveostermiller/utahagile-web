@@ -5,6 +5,9 @@
     "title": "End of Summer Networking",
     "description": "Utah Agile Join us at Olympic Park in Lehi to close out the summer and open up connections and possibilities. It's been a few months since we last met, so we look forward to reengaging with as many as can make it.  Much is changing, so what a great opportunity to have casual conversations to learn and share what's happening all around us.  Come enjoy some light dinner (maybe even some grilled goodies), bring a friend (even the four-legged kind), and reconnect with others who are \"doing it and helping others do it,\" to improve the world of work and achieve better outcomes.  There are pickleball courts, first come first served ... and plenty of open space for other games you'd like to bring. And if you're so inclined, feel free to bring a treat or side to share. The more the merrier.  If you still haven't joined us for a Utah Agile event in the past, this is a great way to get to know us and learn more about what's possible.",
     "url": "https://www.meetup.com/utahagile/events/315882159/",
+    "attendance_mode": "https://schema.org/OfflineEventAttendanceMode",
+    "venue_name": "Olympic Park",
+    "venue_address": "2700 W Parkside Dr, Lehi, UT",
     "location": "Olympic Park \u00b7 2700 W Parkside Dr, Lehi, UT",
     "thumbnail": "https://secure-content.meetupstatic.com/images/classic-events/535418890/676x676.jpg"
   },
@@ -14,6 +17,9 @@
     "title": "Agile Roundtable - Virtual",
     "description": "Utah Agile Join us on Zoom for a virtual roundtable to explore how AI is impacting organizations and their agility. Bring your experiences, perspectives, questions, challenges, and answers if you have them to unpack with others what's happening with AI and how it's impacting the work we're doing.  **How do Agile Roundtables work?** At Agile Roundtables, participants co-create the agenda with the topics they want to discuss. A facilitator guides the team from topic to topic. Then each participant has an opportunity to share what they're taking away from the session. Simple, but powerful!  **Join us!** Agile Roundtables in Utah have been happening monthly since before the Agile Manifesto was written in 2001. Whether you've joined us many times or this is your first, please come! Bring your questions, your challenges, and ideas. You'll walk away from this session not only having gained, but also given something! Even if you don't have a topic in mind, come network, listen, and engage!",
     "url": "https://www.meetup.com/utahagile/events/315883751/",
+    "attendance_mode": "https://schema.org/OnlineEventAttendanceMode",
+    "virtual_url": "https://www.meetup.com/utahagile/events/315883751/",
+    "location": "Virtual",
     "thumbnail": "https://secure-content.meetupstatic.com/images/classic-events/535419703/676x676.jpg"
   },
   {
@@ -22,6 +28,9 @@
     "title": "Agile Roundtable: In Person!",
     "description": "Utah Agile Join us in-person at *Silicon Slopes* in Lehi for the Agile Roundtable.  At Agile Roundtables, participants co-create the agenda with the topics they want to discuss. A facilitator guides the team from topic to topic. Then each participant has an opportunity to share what they're taking away from the session. Simple, but powerful!  Agile Roundtables in Utah have been happening monthly since before the Agile Manifesto was written in 2001. Whether you've joined us many times or this is your first, please come! Bring your questions, your challenges, and ideas. You'll walk away from this session not only having gained, but also given something! Even if you don't have a topic in mind, come network and enjoy face-to-face collaboration!  A light lunch will be served.",
     "url": "https://www.meetup.com/utahagile/events/316023409/",
+    "attendance_mode": "https://schema.org/OfflineEventAttendanceMode",
+    "venue_name": "Silicon Slopes HQ",
+    "venue_address": "2600 W. Executive Pkwy. Suite 140, Lehi, UT",
     "location": "Silicon Slopes HQ \u00b7 2600 W. Executive Pkwy. Suite 140, Lehi, UT",
     "thumbnail": "https://secure-content.meetupstatic.com/images/classic-events/535553709/676x676.jpg"
   }
