@@ -25,6 +25,7 @@ DTEND:20260901T193000Z
 LOCATION:Zoom
 URL:https://www.meetup.com/utahagile/events/12345/
 DESCRIPTION:Come learn about sprint planning.
+CREATED:20260801T090000Z
 END:VEVENT
 BEGIN:VEVENT
 SUMMARY:Retro Roundtable
@@ -77,6 +78,12 @@ class ParseEventsTests(unittest.TestCase):
         self.assertEqual(events[1]["title"], "Sprint Planning Deep Dive")  # Sep, later
         self.assertEqual(events[1]["location"], "Zoom")
         self.assertEqual(events[1]["url"], "https://www.meetup.com/utahagile/events/12345/")
+        self.assertEqual(events[1]["created"], "2026-08-01T09:00:00+00:00")
+
+    def test_event_without_created_has_no_created_field(self):
+        # "Retro Roundtable" in SAMPLE_ICAL has no CREATED line.
+        events = build_events.parse_events(SAMPLE_ICAL)
+        self.assertNotIn("created", events[0])
 
     def test_event_missing_summary_is_skipped(self):
         ical = "BEGIN:VCALENDAR\nBEGIN:VEVENT\nDTSTART:20260901T180000Z\nEND:VEVENT\nEND:VCALENDAR\n"

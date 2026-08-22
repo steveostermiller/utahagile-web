@@ -275,21 +275,27 @@ above). View traffic in the Cloudflare dashboard under Web Analytics for
   `virtual_url` in `data/events.json` are passed straight through from
   Meetup's own schema.org data (`build_events.py`'s `enrich_event()`), not
   inferred client-side. Also includes `description` (from the iCal feed) and
-  a free `offers` block (all Utah Agile events are free). **Known gap:**
-  `performer` (the schema.org field for a speaker/host) is intentionally
-  omitted — neither the iCal feed nor Meetup's own JSON-LD reliably provides
-  it, so there's no real source to populate it from without unreliable
-  scraping of free-text descriptions.
+  a free `offers` block (all Utah Agile events are free), with `offers.
+  validFrom` set to the event's iCal `CREATED` timestamp (when it was
+  published/opened for RSVP on Meetup) — not "today", which would drift on
+  every hourly rebuild and not actually be true. **Known gap:** `performer`
+  (the schema.org field for a speaker/host) is intentionally omitted —
+  neither the iCal feed nor Meetup's own JSON-LD reliably provides it, so
+  there's no real source to populate it from without unreliable scraping of
+  free-text descriptions.
   <br><br>
-  This whole shape (missing `location` entirely for virtual events, and a
+  This whole shape (missing `location` entirely for virtual events, a
   flattened `location.name` string instead of a proper nested `address` for
-  physical ones) was a real, confirmed Google Search Console issue —
-  "invalid: missing field location" for virtual events, plus "improve
-  appearance: missing offers/description/address" for all of them
-  (2026-08-15). Fixed by reading Meetup's `eventAttendanceMode` and
-  `location.@type` (`Place` vs `VirtualLocation`) directly instead of
-  assuming every event is an in-person one with a Place, which is what the
-  original implementation did.
+  physical ones, and a missing `offers.validFrom`) was a real, confirmed
+  series of Google Search Console issues — "invalid: missing field location"
+  for virtual events, "improve appearance: missing offers/description/
+  address" for all of them (2026-08-15), then "missing field validFrom" a
+  few days later (2026-08-21) once Google had reprocessed the first fix.
+  Fixed by reading Meetup's `eventAttendanceMode` and `location.@type`
+  (`Place` vs `VirtualLocation`) directly instead of assuming every event is
+  an in-person one with a Place, which is what the original implementation
+  did, and by parsing iCal's `CREATED` field (already in the feed, just
+  never read before).
 
 `scripts/check_site.py` validates all of the above (canonical links, required
 Open Graph properties, the Organization JSON-LD's required fields, `404.html`

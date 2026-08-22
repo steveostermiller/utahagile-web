@@ -54,10 +54,12 @@ function eventToSchema(ev) {
     image: ev.thumbnail,
     url: ev.url,
     organizer: { "@type": "Organization", name: "Utah Agile", url: "https://utahagile.org/" },
-    // All Utah Agile events are free.
+    // All Utah Agile events are free. validFrom is the event's CREATED
+    // timestamp from Meetup's iCal feed (when it was published/opened for
+    // RSVP) — not "today", which would make it drift on every rebuild.
     offers: {
       "@type": "Offer", price: "0", priceCurrency: "USD",
-      url: ev.url, availability: "https://schema.org/InStock",
+      url: ev.url, availability: "https://schema.org/InStock", validFrom: ev.created,
     },
   };
   if (ev.virtual_url) {

@@ -104,6 +104,8 @@ def parse_events(ical: str) -> list:
                 ev["url"] = val.strip()
             elif key == "DESCRIPTION":
                 ev["description"] = unescape(val)
+            elif key == "CREATED":
+                ev["created"] = parse_dt(val)
         if ev.get("title") and ev.get("start"):
             ev.setdefault("url", "https://www.meetup.com/utahagile/events/")
             events.append(ev)
