@@ -81,7 +81,9 @@ without preventing any user-visible failure.
 
 ## How past-meetup videos work
 
-1. `.github/workflows/update-videos.yml` runs `scripts/build_videos.py` hourly.
+1. `.github/workflows/update-videos.yml` runs `scripts/build_videos.py` twice a day
+   (12:00 and 18:00 UTC — see "Why twice a day" below), on every push to `main`,
+   and on demand.
 2. The script reads the Utah Agile YouTube channel's public Atom feed
    (`https://www.youtube.com/feeds/videos.xml?channel_id=...`, no API key
    needed) and writes the 2 most recent uploads to `data/videos.json`, using
@@ -98,6 +100,39 @@ Same retry-on-transient-failure behavior as events above (3 attempts, 5s
 apart, via `fetch_with_retry()`) — added for the same reason: two hourly
 runs failed this way on consecutive nights, self-healed the next run, and
 the empty-feed guard meant the site was never actually affected either time.
+
+### Why twice a day (not hourly)
+
+This workflow used to run hourly and started failing nearly every day (22 of
+73 runs between Oct 19 and Nov 4, 2026) — each failure a GitHub email, none
+affecting the site (the commit step is skipped on failure, so the last good
+`data/videos.json` stays). The failing step's log showed the cause:
+`HTTP Error 404: Not Found` / `500: Internal Server Error` from YouTube's feed
+endpoint, for a channel that exists and loads fine at other times. (An earlier
+guess that this was rate-limiting or IP blocking turned out to be unsupported
+by the evidence.)
+
+The failures weren't random. Across 237 scheduled runs (Sep 16 – Nov 4) every
+run from 07:00 to 21:59 UTC succeeded — zero failures in roughly 150 runs —
+while the failures were confined to about 22:00–07:00 UTC (≈ 5pm–1am
+Mountain), stable in UTC terms since at least August. Since videos get
+uploaded a few times a year, checking every hour was never needed, so the
+schedule is now `0 12,18 * * *` (12:00 and 18:00 UTC): the middle of the clean
+stretch, with margin for GitHub's scheduled-run delay (often 10–50 minutes).
+
+Things to know:
+- Events (`update-events.yml`) stay hourly — Meetup has had no such problem
+  (74/74 successful since Oct 19) and event changes matter sooner.
+- The `push` trigger is kept, so a push made during the evening window can
+  still produce one harmless failed run.
+- A new YouTube upload can take up to ~12 hours to appear, or trigger it
+  immediately via **Actions → Update videos from YouTube → Run workflow**.
+- This is an empirical pattern, not a documented YouTube behavior. If failure
+  emails come back, re-check per-hour failure rates (the analysis is just
+  success/failure counts by UTC hour from the Actions API) before adjusting.
+- `build_videos.py` now also writes its failure reason as a GitHub
+  annotation (`::error::`), so the cause is visible on the run summary
+  without opening the step log.
 
 ---
 
@@ -182,11 +217,23 @@ links that have gone dead. It's deliberately **not** part of the push/PR
 checks above, since network requests to third-party sites are flaky.
 
 It only hard-fails on signals that actually mean "broken" — 404/410, 5xx, or
-a connection error. Codes like 403/429/999 (LinkedIn blocks almost all
-scripted requests this way, regardless of whether the profile is real) are
-reported as informational "BLOCKED," not failures — otherwise this check
-would cry wolf on the same handful of LinkedIn links every week and train you
-to ignore it.
+a connection that fails outright (DNS error, refused, timeout, TLS error).
+Codes like 403/429/999 (LinkedIn blocks almost all scripted requests this way,
+regardless of whether the profile is real) are reported as informational
+"BLOCKED," not failures — otherwise this check would cry wolf on the same
+handful of LinkedIn links every week and train you to ignore it.
+
+A server that accepts the connection and then hangs up without sending any
+response (to both HEAD and GET) is also reported as "BLOCKED." That's what
+WAFs that fingerprint Python's TLS handshake do instead of returning a 403.
+This caused a real false-alarm failure on 2026-11-02: `agilealliance.org`
+started doing it while loading fine in curl and browsers (the failing run's
+only error was "Remote end closed connection without response"). If a link
+ever shows this and you want to be sure it's not actually dead, open it in a
+browser — that's the authoritative check.
+
+`tests/test_check_links.py` pins down which outcomes fail the run vs. get
+reported as blocked.
 
 Run it locally with `python3 scripts/check_links.py`.
 

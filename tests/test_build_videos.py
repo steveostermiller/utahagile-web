@@ -10,6 +10,8 @@ save() guard that refuses to overwrite a good data/videos.json with an
 empty result.
 """
 
+import contextlib
+import io
 import json
 import sys
 import tempfile
@@ -90,6 +92,49 @@ class SaveGuardTests(unittest.TestCase):
             ok = build_videos.save(videos, out_path)
             self.assertTrue(ok)
             self.assertEqual(len(json.loads(out_path.read_text())), build_videos.LIMIT)
+
+
+class ErrorAnnotationTests(unittest.TestCase):
+    """The reason for a failed run must reach GitHub's run-summary annotations
+    (via ::error:: on stdout), not just the step log — otherwise all anyone
+    sees without opening the log is "Process completed with exit code 1"."""
+
+    def _run_main(self, **patches):
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = build_videos.main()
+        return code, out.getvalue()
+
+    def test_fetch_failure_is_annotated_with_the_cause(self):
+        with patch.object(build_videos, "fetch_with_retry", side_effect=OSError("boom 429")):
+            code, out = self._run_main()
+        self.assertEqual(code, 1)
+        self.assertIn("::error::", out)
+        self.assertIn("OSError", out)
+        self.assertIn("boom 429", out)
+
+    def test_non_xml_response_is_annotated_not_a_traceback(self):
+        html = b"<html><body>Before you continue to YouTube"
+        with patch.object(build_videos, "fetch_with_retry", return_value=html):
+            code, out = self._run_main()
+        self.assertEqual(code, 1)
+        self.assertIn("::error::", out)
+        self.assertIn("not valid XML", out)
+        self.assertIn("Before you continue", out)  # shows what actually came back
+
+    def test_empty_feed_is_annotated(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            out = io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
+                ok = build_videos.save([], Path(tmp) / "videos.json")
+        self.assertFalse(ok)
+        self.assertIn("::error::parsed 0 videos", out.getvalue())
+
+    def test_annotation_escapes_newlines_and_percent(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            build_videos.annotate_error("line one\nline two 100%")
+        self.assertEqual(out.getvalue().strip(), "::error::line one%0Aline two 100%25")
 
 
 class FetchWithRetryTests(unittest.TestCase):

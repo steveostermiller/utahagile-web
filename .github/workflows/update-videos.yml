@@ -2,10 +2,19 @@ name: Update videos from YouTube
 
 # Refreshes data/videos.json from the Utah Agile YouTube channel feed so the
 # Past Meetup Events section always shows the 2 most recent videos.
+#
+# Twice a day, at times chosen from data rather than hourly: YouTube's feed
+# endpoint intermittently answers HTTP 404/500, and across 237 scheduled runs
+# (Sep 16 - Nov 4, 2026) every run from 07:00 to 21:59 UTC succeeded while
+# the failures were confined to roughly 22:00-07:00 UTC (about 5pm-1am
+# Mountain). 12:00 and 18:00 UTC sit in the middle of the clean stretch, with
+# margin for GitHub's scheduled-run delay (often 10-50 minutes). Videos are
+# uploaded a few times a year, so a 12-hour lag is irrelevant. If failure
+# emails return, re-check the per-hour failure rates before changing this.
 
 on:
   schedule:
-    - cron: "0 * * * *"      # hourly
+    - cron: "0 12,18 * * *"  # 12:00 and 18:00 UTC
   workflow_dispatch: {}       # lets you trigger it manually from the Actions tab
   push:
     branches: [ main ]        # also refresh on every deploy

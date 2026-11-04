@@ -70,14 +70,24 @@ def parse_videos(xml_bytes: bytes) -> list:
     return videos[:LIMIT]
 
 
+def annotate_error(msg: str) -> None:
+    """Emit a GitHub Actions error annotation so the reason shows on the run
+    summary (and via the API) instead of only inside the step log, where all
+    the summary says is "Process completed with exit code 1". Plain text
+    when run locally."""
+    escaped = msg.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+    print(f"::error::{escaped}")
+
+
 def save(videos: list, out_path: Path) -> bool:
     """Write videos to out_path. Refuses to overwrite with an empty result —
     an active channel's feed should never legitimately return zero videos, so
     a feed-format change fails loudly here instead of silently blanking the
     Past Meetup Events section."""
     if not videos:
-        print(f"ERROR: parsed 0 videos from feed — refusing to overwrite {out_path}",
-              file=sys.stderr)
+        msg = f"parsed 0 videos from feed — refusing to overwrite {out_path}"
+        print(f"ERROR: {msg}", file=sys.stderr)
+        annotate_error(msg)
         return False
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(videos, indent=2) + "\n")
@@ -90,9 +100,18 @@ def main() -> int:
         xml_bytes = fetch_with_retry(lambda: fetch_feed(FEED_URL))
     except Exception as e:  # network hiccup shouldn't wipe a good file
         print(f"ERROR fetching YouTube feed: {e}", file=sys.stderr)
+        annotate_error(f"fetching YouTube feed failed: {type(e).__name__}: {e}")
         return 1
 
-    videos = parse_videos(xml_bytes)
+    try:
+        videos = parse_videos(xml_bytes)
+    except ET.ParseError as e:
+        # A 200 response that isn't Atom XML (an HTML interstitial, error
+        # page, etc.) — include the start of the body so the cause is visible.
+        snippet = xml_bytes[:200].decode("utf-8", errors="replace")
+        print(f"ERROR parsing YouTube feed: {e}", file=sys.stderr)
+        annotate_error(f"YouTube feed was not valid XML ({e}); response began: {snippet!r}")
+        return 1
     return 0 if save(videos, OUT_PATH) else 1
 
 
