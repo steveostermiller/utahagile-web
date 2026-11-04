@@ -16,14 +16,18 @@ Some sites (LinkedIn especially) reliably return 403/429/999 to any scripted
 request regardless of whether the page is real — that's bot-blocking, not
 breakage, and treating it as a hard failure would make this check cry wolf
 on the same handful of links every single week. Those codes are reported as
-informational "BLOCKED" rather than failing the run; only signals that
+informational "BLOCKED" rather than failing the run — as is a server that
+accepts the connection and then hangs up without any response (some WAFs do
+this to Python's TLS fingerprint instead of sending a 403). Only signals that
 actually mean the resource is gone (404/410), the server errored (5xx), or
-the connection failed outright count as a real failure.
+the connection failed outright (DNS, refused, timeout, TLS) count as a real
+failure.
 
 Run locally:   python3 scripts/check_links.py
 """
 
 import html.parser
+import http.client
 import re
 import sys
 import urllib.error
@@ -37,6 +41,14 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; utahagile-web-link-check/1.0)
 
 # Status codes that mean "a script isn't welcome here," not "this is broken."
 BOT_BLOCKED_CODES = {401, 403, 429, 999}
+
+# Returned by check() when the server accepts the TLS connection and then hangs
+# up without sending any HTTP response, for both HEAD and GET. A dead site
+# fails earlier (DNS error, refused connection, timeout); this is what WAFs
+# that fingerprint Python's TLS handshake do instead of sending a 403 —
+# agilealliance.org started doing it in Nov 2026 while loading fine in curl
+# and browsers. Treated like BOT_BLOCKED_CODES, not as a broken link.
+DROPPED = "connection dropped without response"
 
 
 class LinkCollector(html.parser.HTMLParser):
@@ -69,7 +81,9 @@ def collect_links() -> list:
 
 
 def check(url: str):
-    """Return an HTTP status int on success, or an error string on failure."""
+    """Return an HTTP status int on success, DROPPED if the server hangs up on
+    both HEAD and GET without responding, or an error string on any other
+    failure."""
     try:
         req = urllib.request.Request(url, headers=HEADERS, method="HEAD")
         with urllib.request.urlopen(req, timeout=TIMEOUT) as resp:
@@ -77,6 +91,8 @@ def check(url: str):
     except urllib.error.HTTPError as e:
         if e.code not in (405, 501):  # a real HTTP error, not "HEAD unsupported"
             return e.code
+    except http.client.RemoteDisconnected:
+        pass  # some servers drop HEAD but serve GET — try it before concluding
     except Exception as e:
         return str(e)
 
@@ -86,8 +102,21 @@ def check(url: str):
             return resp.status
     except urllib.error.HTTPError as e:
         return e.code
+    except http.client.RemoteDisconnected:
+        return DROPPED
     except Exception as e:
         return str(e)
+
+
+def classify(result) -> str:
+    """Map a check() result to "ok", "blocked" (bot protection — informational,
+    doesn't fail the run), or "fail" (resource gone, server error, or the
+    connection failed outright: DNS, refused, timeout, TLS)."""
+    if isinstance(result, int) and result < 400:
+        return "ok"
+    if result == DROPPED or (isinstance(result, int) and result in BOT_BLOCKED_CODES):
+        return "blocked"
+    return "fail"
 
 
 def main():
@@ -96,9 +125,10 @@ def main():
     broken, blocked = [], []
     for url in links:
         result = check(url)
-        if isinstance(result, int) and result < 400:
+        kind = classify(result)
+        if kind == "ok":
             print(f"  OK      {result}  {url}")
-        elif isinstance(result, int) and result in BOT_BLOCKED_CODES:
+        elif kind == "blocked":
             print(f"  BLOCKED {result}  {url}")
             blocked.append((url, result))
         else:
@@ -107,7 +137,8 @@ def main():
 
     print("\n" + ("-" * 48))
     if blocked:
-        print(f"{len(blocked)} link(s) returned a bot-blocking status (403/429/999/401) — "
+        print(f"{len(blocked)} link(s) returned a bot-blocking signal (403/429/999/401, or a "
+              "connection dropped without any response) — "
               "not treated as failures, but worth a manual glance if the list grows:")
         for url, result in blocked:
             print(f"  {result}  {url}")
